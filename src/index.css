@@ -1,1 +1,171 @@
 @import "tailwindcss";
+
+@theme {
+  --color-obsidian:   #0A0F1E;
+  --color-navy:       #0D1B3E;
+  --color-teal:       #0B6E6E;
+  --color-teal-light: #0E8B8B;
+  --color-amber:      #F5A623;
+  --color-cream:      #F7F3EC;
+  --color-cream-dk:   #EDE7DB;
+  --color-sage:       #4A7C6F;
+  --color-rose:       #C75E5E;
+  --color-slate:      #8893A8;
+
+  --font-serif: "Playfair Display", Georgia, serif;
+  --font-sans:  "DM Sans", sans-serif;
+
+  --shadow-teal: 0 8px 24px rgb(11 110 110 / 0.4);
+  --shadow-glow: 0 0 40px  rgb(11 110 110 / 0.6);
+
+  --blur-xs: 4px;
+
+  --animate-fade-up:    fadeUp    0.5s ease forwards;
+  --animate-fade-in:    fadeIn    0.4s ease forwards;
+  --animate-pulse-ring: pulseRing 1.5s ease-out infinite;
+  --animate-wave:       wave      0.8s ease-in-out infinite;
+  --animate-spin-slow:  spin      0.6s linear infinite;
+  --animate-shimmer:    shimmer   1.5s infinite;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes pulseRing {
+  0%   { transform: scale(0.8); opacity: 1; }
+  100% { transform: scale(2);   opacity: 0; }
+}
+@keyframes wave {
+  0%, 100% { height: 8px;  }
+  50%       { height: 28px; }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+@utility wave-bar {
+  animation: wave 0.8s ease-in-out infinite;
+}
+
+@layer components {
+
+  .card-glass {
+    @apply bg-navy/70 backdrop-blur-md border border-teal/20 rounded-2xl;
+  }
+  .card-glass-light {
+    @apply bg-cream/5 backdrop-blur-sm border border-cream/10 rounded-2xl;
+  }
+
+
+  .btn-primary {
+    @apply inline-flex items-center gap-2 px-6 py-3 rounded-xl
+           bg-linear-to-br from-teal to-teal-light text-white
+           font-sans font-medium text-sm tracking-wide
+           transition-all duration-200
+           hover:-translate-y-px hover:shadow-teal
+           active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center gap-2 px-6 py-3 rounded-xl
+           border border-cream/25 text-cream bg-transparent
+           font-sans font-normal text-sm
+           transition-all duration-200
+           hover:border-teal hover:text-teal-light;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg
+           text-slate bg-transparent
+           font-sans text-sm
+           transition-all duration-200
+           hover:bg-cream/8 hover:text-cream;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full
+           text-[11px] font-medium tracking-wide uppercase;
+  }
+  .badge-teal  { @apply bg-teal/20  text-teal-light  border border-teal/30;  }
+  .badge-amber { @apply bg-amber/15 text-amber        border border-amber/30; }
+  .badge-rose  { @apply bg-rose/15  text-rose         border border-rose/30;  }
+  .badge-sage  { @apply bg-sage/15  text-[#6BAF9F]    border border-sage/30;  }
+
+  .nav-link {
+    @apply flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl
+           cursor-pointer text-sm text-slate font-normal
+           transition-all duration-200
+           hover:bg-cream/6 hover:text-cream;
+  }
+  .nav-link.active {
+    @apply bg-teal/20 text-teal-light font-medium;
+  }
+
+  .form-input {
+    @apply w-full bg-cream/6 border border-cream/12 text-cream
+           rounded-xl px-4 py-3 font-sans text-sm outline-none
+           placeholder:text-slate
+           transition-all duration-200
+           focus:border-teal focus:ring-2 focus:ring-teal/15;
+  }
+  .form-label {
+    @apply block text-xs font-medium text-slate mb-1.5 uppercase tracking-wide;
+  }
+
+  .section-label {
+    @apply text-[10px] text-slate tracking-[1px] uppercase mb-2;
+  }
+
+  .table-header-cell {
+    @apply text-[11px] text-slate uppercase tracking-wide;
+  }
+  .table-row-hover {
+    @apply border-b border-cream/6 transition-colors duration-150
+           hover:bg-cream/3 cursor-pointer;
+  }
+
+  .tab-pill {
+    @apply px-5 py-2 rounded-lg cursor-pointer
+           font-sans text-sm font-medium text-slate
+           transition-all duration-200 capitalize;
+  }
+  .tab-pill.active {
+    @apply bg-linear-to-br from-teal to-teal-light text-white;
+  }
+}
+
+@layer base {
+  ::-webkit-scrollbar       { width: 6px; }
+  ::-webkit-scrollbar-track { background: #0D1B3E; }
+  ::-webkit-scrollbar-thumb { background: #0B6E6E; border-radius: 3px; }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--color-obsidian);
+    color: var(--color-cream);
+    min-height: 100vh;
+  }
+
+  html {
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
+  }
+  button, [role="button"] {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+}
+
+.wave-bar:nth-child(2)  { animation-delay: 0.05s; }
+.wave-bar:nth-child(3)  { animation-delay: 0.10s; }
+.wave-bar:nth-child(4)  { animation-delay: 0.15s; }
+.wave-bar:nth-child(5)  { animation-delay: 0.20s; }
+.wave-bar:nth-child(6)  { animation-delay: 0.25s; }
+.wave-bar:nth-child(7)  { animation-delay: 0.30s; }
+.wave-bar:nth-child(8)  { animation-delay: 0.35s; }
+.wave-bar:nth-child(9)  { animation-delay: 0.40s; }
+.wave-bar:nth-child(10) { animation-delay: 0.45s; }
