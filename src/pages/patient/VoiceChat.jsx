@@ -251,7 +251,7 @@ export default function VoiceChat() {
             Voice Chat
           </h1>
           <p className="text-slate text-xs sm:text-sm mt-0.5">
-            AI health assistant · end-to-end encrypted
+            AI health assistant
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -314,7 +314,7 @@ export default function VoiceChat() {
         >
           <ChatHeader status={status} />
 
-          {!recording && !audioURL && (
+          {/* {!recording && !audioURL && (
             <div
               className="flex gap-2 px-3 py-2 overflow-x-auto shrink-0"
               style={{ background: '#0A0F1E', borderBottom: '1px solid rgba(14,139,139,0.1)' }}
@@ -332,7 +332,7 @@ export default function VoiceChat() {
                 </button>
               ))}
             </div>
-          )}
+          )} */}
 
           <Messages
             messages={messages}
