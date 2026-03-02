@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Header from '../../components/layout/Header'
 import Card from '../../components/ui/Card'
@@ -6,10 +7,8 @@ import Button from '../../components/ui/Button'
 import Icon from '../../components/ui/Icon'
 import MetricCard from '../../components/shared/MetricCard'
 
-const UPCOMING = [
-  { doctor: 'Dr. Sarah Chen',  specialty: 'Cardiology',       date: 'Feb 28, 2026', time: '10:30 AM', status: 'confirmed' },
-  { doctor: 'Dr. Marcus Webb', specialty: 'General Practice', date: 'Mar 5, 2026',  time: '2:00 PM',  status: 'pending'   },
-]
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+const PATIENT_ID = 1
 
 const VITALS = [
   { label: 'Blood Pressure', value: '118/76', unit: 'mmHg' },
@@ -33,6 +32,46 @@ const COLOR_CLASSES = {
 
 export default function PatientHome() {
   const navigate = useNavigate()
+  const [appointments, setAppointments] = useState([])
+
+  useEffect(() => {
+    let cancelled = false
+    const loadAppointments = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/users/${PATIENT_ID}/appointments`)
+        if (!res.ok) throw new Error('Failed to load appointments')
+        const data = await res.json()
+        if (cancelled) return
+        const mapped = (data || []).map((a, idx) => {
+          const d = a.date ? new Date(a.date) : null
+          const dateLabel = d
+            ? d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+            : ''
+          const timeLabel = d
+            ? d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+            : ''
+          return {
+            id: a._id || idx,
+            doctor: a.doctorOrClinic || 'Doctor',
+            specialty: a.location || 'Visit',
+            date: dateLabel,
+            time: timeLabel,
+            status: 'confirmed',
+            callSummary: a.call_summary,
+            documents: a.related_documents || [],
+            historySummary: a.history_summary,
+          }
+        })
+        setAppointments(mapped)
+      } catch (e) {
+        console.error(e)
+      }
+    }
+    loadAppointments()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   return (
     <div className="animate-fade-in">
@@ -43,7 +82,13 @@ export default function PatientHome() {
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-5">
-        <MetricCard label="Upcoming Visits"  value="2"  sub="Next: Feb 28"         icon="calendar"  color="teal"  />
+        <MetricCard
+          label="Upcoming Visits"
+          value={appointments.length.toString()}
+          sub={appointments[0]?.date ? `Next: ${appointments[0].date}` : 'No visits yet'}
+          icon="calendar"
+          color="teal"
+        />
         <MetricCard label="Documents"        value="14" sub="3 pending"             icon="file"      color="amber" />
         <MetricCard label="Active Meds"      value="3"  sub="Refills current"       icon="heart"     color="sage"  />
         <MetricCard label="Health Score"     value="87" sub="↑ 4 pts this month"   icon="star"      color="teal"  trend={5} />
@@ -56,10 +101,10 @@ export default function PatientHome() {
             <h3 className="text-sm sm:text-[15px] font-semibold text-cream">Upcoming Appointments</h3>
             <Button variant="ghost" onClick={() => navigate('/booking')}>+ New</Button>
           </div>
-          {UPCOMING.map((appt, i) => (
+          {appointments.map((appt, i) => (
             <div
-              key={i}
-              className={`flex gap-3 py-3.5 ${i < UPCOMING.length - 1 ? 'border-b border-cream/[0.08]' : ''}`}
+              key={appt.id ?? i}
+              className={`flex gap-3 py-3.5 ${i < appointments.length - 1 ? 'border-b border-cream/[0.08]' : ''}`}
             >
               <div className="w-10 h-10 bg-teal/20 rounded-xl flex items-center justify-center shrink-0">
                 <Icon name="stethoscope" size={16} className="text-teal-light" />
@@ -71,6 +116,16 @@ export default function PatientHome() {
                   <Badge variant={appt.status === 'confirmed' ? 'teal' : 'amber'}>{appt.status}</Badge>
                   <span className="text-[11px] text-slate">{appt.date} · {appt.time}</span>
                 </div>
+                {appt.callSummary && (
+                  <p className="text-xs text-cream-dk mt-1.5 line-clamp-2">
+                    {appt.callSummary}
+                  </p>
+                )}
+                {appt.documents && appt.documents.length > 0 && (
+                  <p className="text-[11px] text-slate mt-1">
+                    Linked documents: {appt.documents.length}
+                  </p>
+                )}
               </div>
             </div>
           ))}
