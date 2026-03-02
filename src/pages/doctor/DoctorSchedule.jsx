@@ -1,21 +1,67 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Header from '../../components/layout/Header'
 import Card from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
 import Button from '../../components/ui/Button'
 import Icon from '../../components/ui/Icon'
 
-const HOURS = ['8:00', '9:00', '10:00', '11:00', '12:00', '1:00', '2:00', '3:00', '4:00']
-
-const APPOINTMENTS = [
-  { name: 'James Park',   time: '9:00',  duration: 2, type: 'Follow-up',     status: 'confirmed', color: '#0B6E6E' },
-  { name: 'Maria Santos', time: '11:00', duration: 1, type: 'New Patient',    status: 'confirmed', color: '#F5A623' },
-  { name: 'Robert Kim',   time: '2:00',  duration: 2, type: 'Consultation',   status: 'confirmed', color: '#4A7C6F' },
-  { name: 'Priya Mehta',  time: '4:00',  duration: 1, type: 'Results Review', status: 'pending',   color: '#C75E5E' },
+// Displayable hour slots for the day view
+const HOURS = [
+  '8:00', '9:00', '10:00', '11:00',
+  '12:00', '13:00', '14:00', '15:00',
+  '16:00', '17:00', '18:00', '19:00', '20:00',
 ]
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+const PATIENT_ID = 1
 
 export default function DoctorSchedule() {
   const [view, setView] = useState('queue') // mobile: 'queue' | 'grid'
+  const [appointments, setAppointments] = useState([])
+
+  useEffect(() => {
+    let cancelled = false
+    const fetchAppointments = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/users/${PATIENT_ID}/appointments`)
+        if (!res.ok) throw new Error('Failed to load appointments')
+        const data = await res.json()
+        if (cancelled) return
+        const mapped = (data || []).map((a, idx) => {
+          const d = a.date ? new Date(a.date) : null
+          const timeLabel = d
+            ? d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+            : ''
+          const hour = d ? d.getHours() : null
+          // Map 24h hour (e.g. 8, 9, 13) directly to HOURS labels ('8:00', '9:00', '13:00', ...)
+          const hourIndex =
+            hour != null
+              ? HOURS.findIndex(h => Number(h.split(':')[0]) === hour)
+              : -1
+          return {
+            id: a._id || idx,
+            name: 'James Park',
+            time: timeLabel,
+            duration: 1,
+            type: a.doctorOrClinic || 'Consultation',
+            status: 'confirmed',
+            color: '#0B6E6E',
+            callSummary: a.call_summary,
+            documents: a.related_documents || [],
+            historySummary: a.history_summary,
+            rawDate: a.date,
+            hourIndex,
+          }
+        })
+        setAppointments(mapped)
+      } catch (e) {
+        console.error(e)
+      }
+    }
+    fetchAppointments()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   return (
     <div className="animate-fade-in">
@@ -45,8 +91,8 @@ export default function DoctorSchedule() {
       <div className="flex flex-col lg:grid lg:grid-cols-[1fr_280px] gap-5">
 
         <div className={`${view === 'grid' ? 'block' : 'hidden'} lg:block`}>
-          <Card className="!p-0 overflow-hidden overflow-x-auto">
-            <div className="flex min-w-[360px]">
+          <Card className="!p-0 overflow-hidden">
+            <div className="flex min-w-[360px] max-h-[480px] overflow-y-auto overflow-x-auto">
               <div className="w-12 sm:w-14 shrink-0">
                 <div className="h-12 border-b border-cream/[0.08]" />
                 {HOURS.map(h => (
@@ -59,14 +105,14 @@ export default function DoctorSchedule() {
               <div className="flex-1 relative">
                 <div className="h-12 border-b border-cream/[0.08] flex items-center px-3 sm:px-4 gap-2 sm:gap-3">
                   <span className="text-xs sm:text-sm font-medium text-cream">Dr. Sarah Chen</span>
-                  <Badge variant="teal">{APPOINTMENTS.length} appts</Badge>
+                  <Badge variant="teal">{appointments.length} appts</Badge>
                 </div>
                 {HOURS.map(h => (
                   <div key={h} className="h-14 sm:h-16 border-b border-cream/[0.04]" />
                 ))}
-                {APPOINTMENTS.map((appt, idx) => {
-                  const hourIdx = HOURS.indexOf(appt.time)
-                  if (hourIdx === -1) return null
+                {appointments.map((appt, idx) => {
+                  const hourIdx = appt.hourIndex
+                  if (hourIdx == null || hourIdx < 0) return null
                   const cellH = window.innerWidth < 640 ? 56 : 64
                   return (
                     <div
@@ -99,8 +145,8 @@ export default function DoctorSchedule() {
         <div className={`${view === 'queue' ? 'block' : 'hidden'} lg:block`}>
           <Card>
             <h3 className="text-sm sm:text-[15px] font-semibold text-cream mb-4 sm:mb-5">Patient Queue</h3>
-            {APPOINTMENTS.map((appt, i) => (
-              <div key={i} className={`py-3.5 ${i < APPOINTMENTS.length - 1 ? 'border-b border-cream/[0.08]' : ''}`}>
+            {appointments.map((appt, i) => (
+              <div key={appt.id ?? i} className={`py-3.5 ${i < appointments.length - 1 ? 'border-b border-cream/[0.08]' : ''}`}>
                 <div className="flex justify-between mb-1.5">
                   <span className="text-sm font-medium text-cream">{appt.name}</span>
                   <span className="text-xs text-slate">{appt.time}</span>
@@ -109,6 +155,35 @@ export default function DoctorSchedule() {
                   <Badge variant={appt.status === 'confirmed' ? 'teal' : 'amber'}>{appt.status}</Badge>
                   <Badge variant="sage">{appt.type}</Badge>
                 </div>
+                {appt.callSummary && (
+                  <p className="text-xs text-cream-dk mt-1.5 line-clamp-2">
+                    {appt.callSummary}
+                  </p>
+                )}
+                {appt.documents && appt.documents.length > 0 && (
+                  <div className="mt-1 space-y-1">
+                    <p className="text-[11px] text-slate">
+                      Linked documents:
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {appt.documents.slice(0, 3).map((url, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => window.open(url, '_blank', 'noopener,noreferrer')}
+                          className="text-[11px] px-2 py-1 rounded-full border border-teal/40 text-teal-light hover:bg-teal/10 transition-colors"
+                        >
+                          View doc {idx + 1}
+                        </button>
+                      ))}
+                      {appt.documents.length > 3 && (
+                        <span className="text-[11px] text-slate">
+                          +{appt.documents.length - 3} more
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
             <Button icon="eye" className="w-full justify-center mt-4 sm:mt-5">View All Patients</Button>

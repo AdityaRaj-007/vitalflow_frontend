@@ -6,7 +6,7 @@ import Button from '../../components/ui/Button'
 import Icon from '../../components/ui/Icon'
 
 const STATUS_VARIANT = { processed: 'teal', processing: 'amber', uploading: 'sage' }
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 const USER_ID = 1
 
 function formatFileSize(bytes) {
@@ -128,12 +128,12 @@ export default function DocumentUpload() {
             prev.map(f =>
               f.id === entry.id
                 ? {
-                    ...f,
-                    name: created.name || f.name,
-                    url: created.url || f.url,
-                    type: created.type || f.type,
-                    status: 'processed',
-                  }
+                  ...f,
+                  name: created.name || f.name,
+                  url: created.url || f.url,
+                  type: created.type || f.type,
+                  status: 'processed',
+                }
                 : f,
             ),
           )
@@ -316,9 +316,8 @@ export default function DocumentUpload() {
                       onClick={() => handleCopyUrl(f)}
                     >
                       <span
-                        className={`pointer-events-none absolute -top-7 right-0 whitespace-nowrap rounded-md bg-slate-900/90 px-2 py-1 text-[10px] text-cream shadow-sm transition-opacity duration-150 ${
-                          copiedId === f.id ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'
-                        }`}
+                        className={`pointer-events-none absolute -top-7 right-0 whitespace-nowrap rounded-md bg-slate-900/90 px-2 py-1 text-[10px] text-cream shadow-sm transition-opacity duration-150 ${copiedId === f.id ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'
+                          }`}
                       >
                         Click to copy document URL
                       </span>
@@ -330,9 +329,8 @@ export default function DocumentUpload() {
                       <Icon
                         name="eye"
                         size={13}
-                        className={`transition-transform duration-150 ${
-                          copiedId === f.id ? 'scale-110 text-teal-light' : 'group-hover:scale-110'
-                        }`}
+                        className={`transition-transform duration-150 ${copiedId === f.id ? 'scale-110 text-teal-light' : 'group-hover:scale-110'
+                          }`}
                       />
                     </button>
                   )}

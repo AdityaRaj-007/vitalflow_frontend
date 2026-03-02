@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import Icon from '../../components/ui/Icon'
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+
 export default function AuthPage() {
   const { login } = useAuth()
   const [mode, setMode]       = useState('login')
@@ -9,11 +11,36 @@ export default function AuthPage() {
   const [email, setEmail]     = useState('')
   const [password, setPass]   = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError]     = useState(null)
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
+    setError(null)
     setLoading(true)
-    setTimeout(() => { setLoading(false); login(role) }, 1200)
+
+    try {
+      if (mode === 'register') {
+        const res = await fetch(`${API_BASE_URL}/users`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        })
+
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}))
+          throw new Error(data.message || 'Failed to create account')
+        }
+      }
+
+      // For this prototype, we don’t gate login on backend auth;
+      // we just ensure a user exists, then set the app role.
+      login(role)
+    } catch (err) {
+      console.error(err)
+      setError(err.message || 'Something went wrong. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const features = [
@@ -96,6 +123,12 @@ export default function AuthPage() {
                 ? 'Sign in to your MedicAI account'
                 : 'Get started with MedicAI today'}
             </p>
+
+            {error && (
+              <p className="text-xs text-rose mb-2">
+                {error}
+              </p>
+            )}
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               {mode === 'register' && (

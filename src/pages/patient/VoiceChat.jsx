@@ -1,9 +1,12 @@
 import { useState, useRef, useEffect } from 'react'
-import ChatHeader  from '../../components/chat/ChatHeader'
-import Messages    from '../../components/chat/Messages'
-import ChatInput   from '../../components/chat/ChatInput'
-import Badge       from '../../components/ui/Badge'
-import Icon        from '../../components/ui/Icon'
+import ChatHeader from '../../components/chat/ChatHeader'
+import Messages from '../../components/chat/Messages'
+import ChatInput from '../../components/chat/ChatInput'
+import Badge from '../../components/ui/Badge'
+import Icon from '../../components/ui/Icon'
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+const USER_ID = 1
 
 const SUGGESTED_QUESTIONS = [
   'What do my latest lab results mean?',
@@ -13,10 +16,10 @@ const SUGGESTED_QUESTIONS = [
 ]
 
 const HEALTH_CONTEXT = [
-  { icon: 'heart',     label: 'HbA1c',         value: '6.8%'              },
-  { icon: 'activity',  label: 'Blood Pressure', value: '118/76 mmHg'       },
-  { icon: 'clipboard', label: 'Active Meds',    value: '3 medications'     },
-  { icon: 'calendar',  label: 'Next Appt',      value: 'Feb 28 · 10:30 AM' },
+  { icon: 'heart', label: 'HbA1c', value: '6.8%' },
+  { icon: 'activity', label: 'Blood Pressure', value: '118/76 mmHg' },
+  { icon: 'clipboard', label: 'Active Meds', value: '3 medications' },
+  { icon: 'calendar', label: 'Next Appt', value: 'Feb 28 · 10:30 AM' },
 ]
 
 let _id = 0
@@ -36,12 +39,12 @@ const historyToMessages = (history) => [
       return !text.startsWith('[SYSTEM:')
     })
     .map((turn) => ({
-      id:     uid(),
+      id: uid(),
       sender: turn.role === 'user' ? 'user' : 'bot',
-      type:   'text',
-      text:   turn.parts?.[0]?.text ?? '',
-      time:   new Date(),
-      read:   true,
+      type: 'text',
+      text: turn.parts?.[0]?.text ?? '',
+      time: new Date(),
+      read: true,
     })),
 ]
 
@@ -49,27 +52,27 @@ const historyToMessages = (history) => [
 export default function VoiceChat() {
   const [messages, setMessages] = useState([
     {
-      id:     uid(),
+      id: uid(),
       sender: 'bot',
-      text:   "Hi! I'm your MedicAI health assistant 👋  I have access to your medical records, upcoming appointments, and lab results. Ask me anything — by voice or text.",
-      time:   new Date(),
-      read:   false,
+      text: "Hi! I'm your MedicAI health assistant 👋  I have access to your medical records, upcoming appointments, and lab results. Ask me anything — by voice or text.",
+      time: new Date(),
+      read: false,
     },
   ])
 
-  const [input, setInput]           = useState('')
-  const [recording, setRecording]   = useState(false)
+  const [input, setInput] = useState('')
+  const [recording, setRecording] = useState(false)
   const [isProcessing, setProcessing] = useState(false)
-  const [audioURL, setAudioURL]     = useState(null)
+  const [audioURL, setAudioURL] = useState(null)
   const [audioPlaying, setAudioPlaying] = useState(null)
-  const [showContext, setShowContext]   = useState(false)
+  const [showContext, setShowContext] = useState(false)
 
-  const mediaRecorderRef  = useRef(null)
-  const chunksRef         = useRef([])
-  const sessionIdRef      = useRef(crypto.randomUUID())   // stable per session
-  const currentAudioRef   = useRef(null)                  // currently playing TTS audio
-  const recordedBlobRef   = useRef(null)
-  const bottomRef         = useRef(null)
+  const mediaRecorderRef = useRef(null)
+  const chunksRef = useRef([])
+  const sessionIdRef = useRef(crypto.randomUUID())   // stable per session
+  const currentAudioRef = useRef(null)                  // currently playing TTS audio
+  const recordedBlobRef = useRef(null)
+  const bottomRef = useRef(null)
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -120,13 +123,13 @@ export default function VoiceChat() {
     if (!recordedBlobRef.current) return
 
     const voiceMsg = {
-      id:       uid(),
-      sender:   'user',
-      type:     'audio',
+      id: uid(),
+      sender: 'user',
+      type: 'audio',
       audioURL: audioURL,
-      text:     null,
-      time:     new Date(),
-      read:     false,
+      text: null,
+      time: new Date(),
+      read: false,
     }
     setMessages(prev => [...prev, voiceMsg])
     setAudioURL(null)
@@ -144,12 +147,12 @@ export default function VoiceChat() {
     if (!text?.trim() || isProcessing) return
 
     const userMsg = {
-      id:     uid(),
+      id: uid(),
       sender: 'user',
-      type:   'text',
-      text:   text.trim(),
-      time:   new Date(),
-      read:   false,
+      type: 'text',
+      text: text.trim(),
+      time: new Date(),
+      read: false,
     }
     setMessages(prev => [...prev, userMsg])
     setInput('')
@@ -163,11 +166,12 @@ export default function VoiceChat() {
     const formData = new FormData()
     formData.append('audio', audioBlob, 'recording.webm')
     formData.append('sessionId', sessionIdRef.current)
+    formData.append('userId', String(USER_ID))
 
     try {
-      const res = await fetch('http://localhost:3000/api/talk', {
+      const res = await fetch(API_BASE_URL + '/talk', {
         method: 'POST',
-        body:   formData,
+        body: formData,
       })
       if (!res.ok) throw new Error(`Server error: ${res.status}`)
 
@@ -192,13 +196,14 @@ export default function VoiceChat() {
     setProcessing(true)
 
     const formData = new FormData()
-    formData.append('text',      text)
+    formData.append('text', text)
     formData.append('sessionId', sessionIdRef.current)
+    formData.append('userId', String(USER_ID))
 
     try {
-      const res = await fetch('http://localhost:3000/api/talk', {
+      const res = await fetch(API_BASE_URL + '/talk', {
         method: 'POST',
-        body:   formData,
+        body: formData,
       })
       if (!res.ok) throw new Error(`Server error: ${res.status}`)
 
