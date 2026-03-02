@@ -9,7 +9,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 const PATIENT_ID = 1
 
 const STATUS_VARIANT = { managed: 'teal', monitoring: 'amber', resolved: 'sage' }
-const TYPE_VARIANT   = { lab: 'teal', imaging: 'sage', visit: 'amber', prescription: 'rose' }
+const TYPE_VARIANT = { lab: 'teal', imaging: 'sage', visit: 'amber', prescription: 'rose' }
 
 export default function MedicalHistory() {
   const [tab, setTab] = useState('conditions')
