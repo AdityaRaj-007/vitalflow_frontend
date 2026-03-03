@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import Header from '../../components/layout/Header'
 import Card from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
@@ -17,6 +17,39 @@ const PATIENT_ID = 1
 export default function DoctorSchedule() {
   const [view, setView] = useState('queue') // mobile: 'queue' | 'grid'
   const [appointments, setAppointments] = useState([])
+  const [filterMode, setFilterMode] = useState('today')   // 'today' | 'tomorrow' | 'custom'
+  const [customDate, setCustomDate] = useState('');
+
+  const filteredAppointments = useMemo(() => {
+    if (!appointments.length) return []
+
+    const todayStr = new Date().toDateString()
+
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    const tomorrowStr = tomorrow.toDateString()
+
+    return appointments.filter(appt => {
+      if (!appt.rawDate) return false
+
+      const apptDateStr = new Date(appt.rawDate).toDateString()
+
+      if (filterMode === 'today') {
+        return apptDateStr === todayStr
+      }
+
+      if (filterMode === 'tomorrow') {
+        return apptDateStr === tomorrowStr
+      }
+
+      if (filterMode === 'custom' && customDate) {
+        const customStr = new Date(customDate).toDateString()
+        return apptDateStr === customStr
+      }
+
+      return true
+    })
+  }, [appointments, filterMode, customDate])
 
   useEffect(() => {
     let cancelled = false
@@ -28,19 +61,20 @@ export default function DoctorSchedule() {
         if (cancelled) return
         const mapped = (data || []).map((a, idx) => {
           const d = a.date ? new Date(a.date) : null
-          const timeLabel = d
-            ? d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
-            : ''
-          const hour = d ? d.getHours() : null
-          // Map 24h hour (e.g. 8, 9, 13) directly to HOURS labels ('8:00', '9:00', '13:00', ...)
-          const hourIndex =
-            hour != null
-              ? HOURS.findIndex(h => Number(h.split(':')[0]) === hour)
-              : -1
+
           return {
             id: a._id || idx,
             name: 'James Park',
-            time: timeLabel,
+            time: d
+              ? d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+              : '',
+            dateLabel: d
+              ? d.toLocaleDateString(undefined, {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+              })
+              : '',
             duration: 1,
             type: a.doctorOrClinic || 'Consultation',
             status: 'confirmed',
@@ -49,10 +83,20 @@ export default function DoctorSchedule() {
             documents: a.related_documents || [],
             historySummary: a.history_summary,
             rawDate: a.date,
-            hourIndex,
+            hourIndex: d ? HOURS.findIndex(h => Number(h.split(':')[0]) === d.getHours()) : -1,
           }
         })
-        setAppointments(mapped)
+        const sorted = mapped.sort((a, b) => {
+          if (!a.rawDate) return 1
+          if (!b.rawDate) return -1
+
+          const dateA = new Date(a.rawDate)
+          const dateB = new Date(b.rawDate)
+
+          return dateA - dateB
+        })
+
+        setAppointments(sorted)
       } catch (e) {
         console.error(e)
       }
@@ -70,7 +114,39 @@ export default function DoctorSchedule() {
         subtitle="Wednesday, February 25, 2026"
         actions={
           <div className="flex gap-2">
-            <Button variant="ghost" icon="filter">Filter</Button>
+            <div className="flex items-center gap-2">
+              <select
+                value={filterMode}
+                onChange={(e) => setFilterMode(e.target.value)}
+                className="
+      bg-teal/10
+      border border-teal/40
+      text-cream
+      text-sm
+      rounded-lg
+      px-3 py-1.5
+      focus:outline-none
+      focus:ring-2
+      focus:ring-teal
+      focus:border-teal
+      hover:bg-teal/20
+      transition-colors
+    "
+              >
+                <option value="today">Today</option>
+                <option value="tomorrow">Tomorrow</option>
+                <option value="custom">Custom</option>
+              </select>
+
+              {filterMode === 'custom' && (
+                <input
+                  type="date"
+                  value={customDate}
+                  onChange={(e) => setCustomDate(e.target.value)}
+                  className="bg-cream/[0.06] border border-cream/[0.1] text-sm rounded-lg px-2 py-1"
+                />
+              )}
+            </div>
             <Button icon="plus">Add</Button>
           </div>
         }
@@ -105,12 +181,12 @@ export default function DoctorSchedule() {
               <div className="flex-1 relative">
                 <div className="h-12 border-b border-cream/[0.08] flex items-center px-3 sm:px-4 gap-2 sm:gap-3">
                   <span className="text-xs sm:text-sm font-medium text-cream">Dr. Sarah Chen</span>
-                  <Badge variant="teal">{appointments.length} appts</Badge>
+                  <Badge variant="teal">{filteredAppointments.length} appts</Badge>
                 </div>
                 {HOURS.map(h => (
                   <div key={h} className="h-14 sm:h-16 border-b border-cream/[0.04]" />
                 ))}
-                {appointments.map((appt, idx) => {
+                {filteredAppointments.map((appt, idx) => {
                   const hourIdx = appt.hourIndex
                   if (hourIdx == null || hourIdx < 0) return null
                   const cellH = window.innerWidth < 640 ? 56 : 64
@@ -119,7 +195,7 @@ export default function DoctorSchedule() {
                       key={idx}
                       className="absolute left-1.5 right-1.5 sm:left-2 sm:right-2 rounded-lg px-2.5 sm:px-3 py-1.5 sm:py-2 cursor-pointer transition-opacity hover:opacity-90"
                       style={{
-                        top:    `${48 + hourIdx * 64 + 4}px`,
+                        top: `${48 + hourIdx * 64 + 4}px`,
                         height: `${appt.duration * 64 - 8}px`,
                         background: `${appt.color}22`,
                         border: `1px solid ${appt.color}44`,
@@ -128,7 +204,9 @@ export default function DoctorSchedule() {
                       }}
                     >
                       <p className="text-xs sm:text-sm font-semibold text-cream leading-tight truncate">{appt.name}</p>
-                      <p className="text-[10px] sm:text-[11px] text-slate">{appt.type} · {appt.time}</p>
+                      <p className="text-[10px] sm:text-[11px] text-slate">
+                        {appt.type} · {appt.dateLabel} · {appt.time}
+                      </p>
                       {appt.duration > 1 && (
                         <div className="mt-1">
                           <Badge variant={appt.status === 'confirmed' ? 'teal' : 'amber'}>{appt.status}</Badge>
@@ -143,50 +221,55 @@ export default function DoctorSchedule() {
         </div>
 
         <div className={`${view === 'queue' ? 'block' : 'hidden'} lg:block`}>
-          <Card>
+          <Card className="flex flex-col max-h-[calc(100vh-220px)] over">
             <h3 className="text-sm sm:text-[15px] font-semibold text-cream mb-4 sm:mb-5">Patient Queue</h3>
-            {appointments.map((appt, i) => (
-              <div key={appt.id ?? i} className={`py-3.5 ${i < appointments.length - 1 ? 'border-b border-cream/[0.08]' : ''}`}>
-                <div className="flex justify-between mb-1.5">
-                  <span className="text-sm font-medium text-cream">{appt.name}</span>
-                  <span className="text-xs text-slate">{appt.time}</span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Badge variant={appt.status === 'confirmed' ? 'teal' : 'amber'}>{appt.status}</Badge>
-                  <Badge variant="sage">{appt.type}</Badge>
-                </div>
-                {appt.callSummary && (
-                  <p className="text-xs text-cream-dk mt-1.5 line-clamp-2">
-                    {appt.callSummary}
-                  </p>
-                )}
-                {appt.documents && appt.documents.length > 0 && (
-                  <div className="mt-1 space-y-1">
-                    <p className="text-[11px] text-slate">
-                      Linked documents:
-                    </p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {appt.documents.slice(0, 3).map((url, idx) => (
-                        <button
-                          key={idx}
-                          type="button"
-                          onClick={() => window.open(url, '_blank', 'noopener,noreferrer')}
-                          className="text-[11px] px-2 py-1 rounded-full border border-teal/40 text-teal-light hover:bg-teal/10 transition-colors"
-                        >
-                          View doc {idx + 1}
-                        </button>
-                      ))}
-                      {appt.documents.length > 3 && (
-                        <span className="text-[11px] text-slate">
-                          +{appt.documents.length - 3} more
-                        </span>
-                      )}
-                    </div>
+            <div className="overflow-y-auto flex-1 -mx-4 px-4">
+              {filteredAppointments.map((appt, i) => (
+                <div key={appt.id ?? i} className={`py-3.5 ${i < filteredAppointments.length - 1 ? 'border-b border-cream/[0.08]' : ''}`}>
+                  <div className="flex justify-between mb-1.5">
+                    <span className="text-sm font-medium text-cream">{appt.name}</span>
+                    <span className="text-xs text-slate">
+                      {appt.dateLabel} · {appt.time}
+                    </span>
                   </div>
-                )}
-              </div>
-            ))}
-            <Button icon="eye" className="w-full justify-center mt-4 sm:mt-5">View All Patients</Button>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant={appt.status === 'confirmed' ? 'teal' : 'amber'}>{appt.status}</Badge>
+                    <Badge variant="sage">{appt.type}</Badge>
+                  </div>
+                  {appt.callSummary && (
+                    <p className="text-xs text-cream-dk mt-1.5 line-clamp-2">
+                      {appt.callSummary}
+                    </p>
+                  )}
+                  {appt.documents && appt.documents.length > 0 && (
+                    <div className="mt-1 space-y-1">
+                      <p className="text-[11px] text-slate">
+                        Linked documents:
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {appt.documents.slice(0, 3).map((url, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => window.open(url, '_blank', 'noopener,noreferrer')}
+                            className="text-[11px] px-2 py-1 rounded-full border border-teal/40 text-teal-light hover:bg-teal/10 transition-colors"
+                          >
+                            View doc {idx + 1}
+                          </button>
+                        ))}
+                        {appt.documents.length > 3 && (
+                          <span className="text-[11px] text-slate">
+                            +{appt.documents.length - 3} more
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* <Button icon="eye" className="w-full justify-center mt-4 sm:mt-5">View All Patients</Button> */}
           </Card>
         </div>
       </div>
