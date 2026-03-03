@@ -12,22 +12,22 @@ const PATIENT_ID = 1
 
 const VITALS = [
   { label: 'Blood Pressure', value: '118/76', unit: 'mmHg' },
-  { label: 'Heart Rate',     value: '72',     unit: 'bpm'  },
-  { label: 'Blood Glucose',  value: '94',     unit: 'mg/dL'},
+  { label: 'Heart Rate', value: '72', unit: 'bpm' },
+  { label: 'Blood Glucose', value: '94', unit: 'mg/dL' },
 ]
 
 const QUICK_ACTIONS = [
-  { icon: 'mic',    label: 'Voice Chat',     desc: 'Chat with AI assistant', color: 'teal',  page: '/booking'   },
-  { icon: 'upload', label: 'Upload Docs',    desc: 'Add records',            color: 'amber', page: '/documents' },
-  { icon: 'heart',  label: 'Med History',   desc: 'View records',           color: 'rose',  page: '/history'   },
-  { icon: 'search', label: 'Find Doctor',   desc: 'Search providers',       color: 'sage',  page: '/'          },
+  { icon: 'mic', label: 'Voice Chat', desc: 'Chat with AI assistant', color: 'teal', page: '/booking' },
+  { icon: 'upload', label: 'Upload Docs', desc: 'Add records', color: 'amber', page: '/documents' },
+  { icon: 'heart', label: 'Med History', desc: 'View records', color: 'rose', page: '/history' },
+  { icon: 'search', label: 'Find Doctor', desc: 'Search providers', color: 'sage', page: '/' },
 ]
 
 const COLOR_CLASSES = {
-  teal:  { bg: 'bg-teal/10',  hover: 'hover:bg-teal/20',  border: 'border-teal/25',  icon: 'bg-teal/25',  text: 'text-teal-light' },
-  amber: { bg: 'bg-amber/10', hover: 'hover:bg-amber/20', border: 'border-amber/25', icon: 'bg-amber/25', text: 'text-amber'      },
-  rose:  { bg: 'bg-rose/10',  hover: 'hover:bg-rose/20',  border: 'border-rose/25',  icon: 'bg-rose/25',  text: 'text-rose'       },
-  sage:  { bg: 'bg-sage/10',  hover: 'hover:bg-sage/20',  border: 'border-sage/25',  icon: 'bg-sage/25',  text: 'text-[#6BAF9F]'  },
+  teal: { bg: 'bg-teal/10', hover: 'hover:bg-teal/20', border: 'border-teal/25', icon: 'bg-teal/25', text: 'text-teal-light' },
+  amber: { bg: 'bg-amber/10', hover: 'hover:bg-amber/20', border: 'border-amber/25', icon: 'bg-amber/25', text: 'text-amber' },
+  rose: { bg: 'bg-rose/10', hover: 'hover:bg-rose/20', border: 'border-rose/25', icon: 'bg-rose/25', text: 'text-rose' },
+  sage: { bg: 'bg-sage/10', hover: 'hover:bg-sage/20', border: 'border-sage/25', icon: 'bg-sage/25', text: 'text-[#6BAF9F]' },
 }
 
 export default function PatientHome() {
@@ -42,26 +42,52 @@ export default function PatientHome() {
         if (!res.ok) throw new Error('Failed to load appointments')
         const data = await res.json()
         if (cancelled) return
-        const mapped = (data || []).map((a, idx) => {
-          const d = a.date ? new Date(a.date) : null
-          const dateLabel = d
-            ? d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
-            : ''
-          const timeLabel = d
-            ? d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
-            : ''
-          return {
-            id: a._id || idx,
-            doctor: a.doctorOrClinic || 'Doctor',
-            specialty: a.location || 'Visit',
-            date: dateLabel,
-            time: timeLabel,
-            status: 'confirmed',
-            callSummary: a.call_summary,
-            documents: a.related_documents || [],
-            historySummary: a.history_summary,
-          }
-        })
+        // const mapped = (data || []).map((a, idx) => {
+        //   const d = a.date ? new Date(a.date) : null
+        //   const dateLabel = d
+        //     ? d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+        //     : ''
+        //   const timeLabel = d
+        //     ? d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+        //     : ''
+        //   return {
+        //     id: a._id || idx,
+        //     doctor: a.doctorOrClinic || 'Doctor',
+        //     specialty: a.location || 'Visit',
+        //     date: dateLabel,
+        //     time: timeLabel,
+        //     status: 'confirmed',
+        //     callSummary: a.call_summary,
+        //     documents: a.related_documents || [],
+        //     historySummary: a.history_summary,
+        //   }
+        // })
+        const mapped = (data || [])
+          .map((a, idx) => {
+            const d = a.date ? new Date(a.date) : null
+
+            return {
+              id: a._id || idx,
+              doctor: a.doctorOrClinic || 'Doctor',
+              specialty: a.location || 'Visit',
+              dateObj: d, // keep real Date for sorting
+              date: d
+                ? d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+                : '',
+              time: d
+                ? d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+                : '',
+              status: 'confirmed',
+              callSummary: a.call_summary,
+              documents: a.related_documents || [],
+              historySummary: a.history_summary,
+            }
+          })
+          .sort((a, b) => {
+            if (!a.dateObj) return 1
+            if (!b.dateObj) return -1
+            return a.dateObj - b.dateObj
+          })
         setAppointments(mapped)
       } catch (e) {
         console.error(e)
@@ -89,9 +115,9 @@ export default function PatientHome() {
           icon="calendar"
           color="teal"
         />
-        <MetricCard label="Documents"        value="14" sub="3 pending"             icon="file"      color="amber" />
-        <MetricCard label="Active Meds"      value="3"  sub="Refills current"       icon="heart"     color="sage"  />
-        <MetricCard label="Health Score"     value="87" sub="↑ 4 pts this month"   icon="star"      color="teal"  trend={5} />
+        <MetricCard label="Documents" value="14" sub="3 pending" icon="file" color="amber" />
+        <MetricCard label="Active Meds" value="3" sub="Refills current" icon="heart" color="sage" />
+        <MetricCard label="Health Score" value="87" sub="↑ 4 pts this month" icon="star" color="teal" trend={5} />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5 mb-4 md:mb-5">
@@ -122,9 +148,20 @@ export default function PatientHome() {
                   </p>
                 )}
                 {appt.documents && appt.documents.length > 0 && (
-                  <p className="text-[11px] text-slate mt-1">
-                    Linked documents: {appt.documents.length}
-                  </p>
+                  <div className="flex items-center gap-2 mt-2 flex-wrap">
+                    <span className="text-[11px] text-slate">Documents:</span>
+
+                    {appt.documents.map((docUrl, docIdx) => (
+                      <button
+                        key={docIdx}
+                        onClick={() => window.open(docUrl, '_blank', 'noopener,noreferrer')}
+                        className="w-7 h-7 bg-amber/20 hover:bg-amber/30 rounded-lg flex items-center justify-center transition-colors"
+                        title="Open document"
+                      >
+                        <Icon name="file" size={14} className="text-amber" />
+                      </button>
+                    ))}
+                  </div>
                 )}
               </div>
             </div>
