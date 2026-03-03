@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import Header from '../../components/layout/Header'
 import Card from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
@@ -17,6 +17,39 @@ const PATIENT_ID = 1
 export default function DoctorSchedule() {
   const [view, setView] = useState('queue') // mobile: 'queue' | 'grid'
   const [appointments, setAppointments] = useState([])
+  const [filterMode, setFilterMode] = useState('today')   // 'today' | 'tomorrow' | 'custom'
+  const [customDate, setCustomDate] = useState('');
+
+  const filteredAppointments = useMemo(() => {
+    if (!appointments.length) return []
+
+    const todayStr = new Date().toDateString()
+
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    const tomorrowStr = tomorrow.toDateString()
+
+    return appointments.filter(appt => {
+      if (!appt.rawDate) return false
+
+      const apptDateStr = new Date(appt.rawDate).toDateString()
+
+      if (filterMode === 'today') {
+        return apptDateStr === todayStr
+      }
+
+      if (filterMode === 'tomorrow') {
+        return apptDateStr === tomorrowStr
+      }
+
+      if (filterMode === 'custom' && customDate) {
+        const customStr = new Date(customDate).toDateString()
+        return apptDateStr === customStr
+      }
+
+      return true
+    })
+  }, [appointments, filterMode, customDate])
 
   useEffect(() => {
     let cancelled = false
@@ -64,7 +97,6 @@ export default function DoctorSchedule() {
         })
 
         setAppointments(sorted)
-        setAppointments(mapped)
       } catch (e) {
         console.error(e)
       }
@@ -82,7 +114,39 @@ export default function DoctorSchedule() {
         subtitle="Wednesday, February 25, 2026"
         actions={
           <div className="flex gap-2">
-            <Button variant="ghost" icon="filter">Filter</Button>
+            <div className="flex items-center gap-2">
+              <select
+                value={filterMode}
+                onChange={(e) => setFilterMode(e.target.value)}
+                className="
+      bg-teal/10
+      border border-teal/40
+      text-cream
+      text-sm
+      rounded-lg
+      px-3 py-1.5
+      focus:outline-none
+      focus:ring-2
+      focus:ring-teal
+      focus:border-teal
+      hover:bg-teal/20
+      transition-colors
+    "
+              >
+                <option value="today">Today</option>
+                <option value="tomorrow">Tomorrow</option>
+                <option value="custom">Custom</option>
+              </select>
+
+              {filterMode === 'custom' && (
+                <input
+                  type="date"
+                  value={customDate}
+                  onChange={(e) => setCustomDate(e.target.value)}
+                  className="bg-cream/[0.06] border border-cream/[0.1] text-sm rounded-lg px-2 py-1"
+                />
+              )}
+            </div>
             <Button icon="plus">Add</Button>
           </div>
         }
@@ -117,12 +181,12 @@ export default function DoctorSchedule() {
               <div className="flex-1 relative">
                 <div className="h-12 border-b border-cream/[0.08] flex items-center px-3 sm:px-4 gap-2 sm:gap-3">
                   <span className="text-xs sm:text-sm font-medium text-cream">Dr. Sarah Chen</span>
-                  <Badge variant="teal">{appointments.length} appts</Badge>
+                  <Badge variant="teal">{filteredAppointments.length} appts</Badge>
                 </div>
                 {HOURS.map(h => (
                   <div key={h} className="h-14 sm:h-16 border-b border-cream/[0.04]" />
                 ))}
-                {appointments.map((appt, idx) => {
+                {filteredAppointments.map((appt, idx) => {
                   const hourIdx = appt.hourIndex
                   if (hourIdx == null || hourIdx < 0) return null
                   const cellH = window.innerWidth < 640 ? 56 : 64
@@ -160,8 +224,8 @@ export default function DoctorSchedule() {
           <Card className="flex flex-col max-h-[calc(100vh-220px)] over">
             <h3 className="text-sm sm:text-[15px] font-semibold text-cream mb-4 sm:mb-5">Patient Queue</h3>
             <div className="overflow-y-auto flex-1 -mx-4 px-4">
-              {appointments.map((appt, i) => (
-                <div key={appt.id ?? i} className={`py-3.5 ${i < appointments.length - 1 ? 'border-b border-cream/[0.08]' : ''}`}>
+              {filteredAppointments.map((appt, i) => (
+                <div key={appt.id ?? i} className={`py-3.5 ${i < filteredAppointments.length - 1 ? 'border-b border-cream/[0.08]' : ''}`}>
                   <div className="flex justify-between mb-1.5">
                     <span className="text-sm font-medium text-cream">{appt.name}</span>
                     <span className="text-xs text-slate">
