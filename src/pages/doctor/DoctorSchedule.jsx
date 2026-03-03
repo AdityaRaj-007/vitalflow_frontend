@@ -28,19 +28,20 @@ export default function DoctorSchedule() {
         if (cancelled) return
         const mapped = (data || []).map((a, idx) => {
           const d = a.date ? new Date(a.date) : null
-          const timeLabel = d
-            ? d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
-            : ''
-          const hour = d ? d.getHours() : null
-          // Map 24h hour (e.g. 8, 9, 13) directly to HOURS labels ('8:00', '9:00', '13:00', ...)
-          const hourIndex =
-            hour != null
-              ? HOURS.findIndex(h => Number(h.split(':')[0]) === hour)
-              : -1
+
           return {
             id: a._id || idx,
             name: 'James Park',
-            time: timeLabel,
+            time: d
+              ? d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+              : '',
+            dateLabel: d
+              ? d.toLocaleDateString(undefined, {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+              })
+              : '',
             duration: 1,
             type: a.doctorOrClinic || 'Consultation',
             status: 'confirmed',
@@ -49,9 +50,20 @@ export default function DoctorSchedule() {
             documents: a.related_documents || [],
             historySummary: a.history_summary,
             rawDate: a.date,
-            hourIndex,
+            hourIndex: d ? HOURS.findIndex(h => Number(h.split(':')[0]) === d.getHours()) : -1,
           }
         })
+        const sorted = mapped.sort((a, b) => {
+          if (!a.rawDate) return 1
+          if (!b.rawDate) return -1
+
+          const dateA = new Date(a.rawDate)
+          const dateB = new Date(b.rawDate)
+
+          return dateA - dateB
+        })
+
+        setAppointments(sorted)
         setAppointments(mapped)
       } catch (e) {
         console.error(e)
@@ -119,7 +131,7 @@ export default function DoctorSchedule() {
                       key={idx}
                       className="absolute left-1.5 right-1.5 sm:left-2 sm:right-2 rounded-lg px-2.5 sm:px-3 py-1.5 sm:py-2 cursor-pointer transition-opacity hover:opacity-90"
                       style={{
-                        top:    `${48 + hourIdx * 64 + 4}px`,
+                        top: `${48 + hourIdx * 64 + 4}px`,
                         height: `${appt.duration * 64 - 8}px`,
                         background: `${appt.color}22`,
                         border: `1px solid ${appt.color}44`,
@@ -128,7 +140,9 @@ export default function DoctorSchedule() {
                       }}
                     >
                       <p className="text-xs sm:text-sm font-semibold text-cream leading-tight truncate">{appt.name}</p>
-                      <p className="text-[10px] sm:text-[11px] text-slate">{appt.type} · {appt.time}</p>
+                      <p className="text-[10px] sm:text-[11px] text-slate">
+                        {appt.type} · {appt.dateLabel} · {appt.time}
+                      </p>
                       {appt.duration > 1 && (
                         <div className="mt-1">
                           <Badge variant={appt.status === 'confirmed' ? 'teal' : 'amber'}>{appt.status}</Badge>
@@ -143,50 +157,55 @@ export default function DoctorSchedule() {
         </div>
 
         <div className={`${view === 'queue' ? 'block' : 'hidden'} lg:block`}>
-          <Card>
+          <Card className="flex flex-col max-h-[calc(100vh-220px)] over">
             <h3 className="text-sm sm:text-[15px] font-semibold text-cream mb-4 sm:mb-5">Patient Queue</h3>
-            {appointments.map((appt, i) => (
-              <div key={appt.id ?? i} className={`py-3.5 ${i < appointments.length - 1 ? 'border-b border-cream/[0.08]' : ''}`}>
-                <div className="flex justify-between mb-1.5">
-                  <span className="text-sm font-medium text-cream">{appt.name}</span>
-                  <span className="text-xs text-slate">{appt.time}</span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Badge variant={appt.status === 'confirmed' ? 'teal' : 'amber'}>{appt.status}</Badge>
-                  <Badge variant="sage">{appt.type}</Badge>
-                </div>
-                {appt.callSummary && (
-                  <p className="text-xs text-cream-dk mt-1.5 line-clamp-2">
-                    {appt.callSummary}
-                  </p>
-                )}
-                {appt.documents && appt.documents.length > 0 && (
-                  <div className="mt-1 space-y-1">
-                    <p className="text-[11px] text-slate">
-                      Linked documents:
-                    </p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {appt.documents.slice(0, 3).map((url, idx) => (
-                        <button
-                          key={idx}
-                          type="button"
-                          onClick={() => window.open(url, '_blank', 'noopener,noreferrer')}
-                          className="text-[11px] px-2 py-1 rounded-full border border-teal/40 text-teal-light hover:bg-teal/10 transition-colors"
-                        >
-                          View doc {idx + 1}
-                        </button>
-                      ))}
-                      {appt.documents.length > 3 && (
-                        <span className="text-[11px] text-slate">
-                          +{appt.documents.length - 3} more
-                        </span>
-                      )}
-                    </div>
+            <div className="overflow-y-auto flex-1 -mx-4 px-4">
+              {appointments.map((appt, i) => (
+                <div key={appt.id ?? i} className={`py-3.5 ${i < appointments.length - 1 ? 'border-b border-cream/[0.08]' : ''}`}>
+                  <div className="flex justify-between mb-1.5">
+                    <span className="text-sm font-medium text-cream">{appt.name}</span>
+                    <span className="text-xs text-slate">
+                      {appt.dateLabel} · {appt.time}
+                    </span>
                   </div>
-                )}
-              </div>
-            ))}
-            <Button icon="eye" className="w-full justify-center mt-4 sm:mt-5">View All Patients</Button>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant={appt.status === 'confirmed' ? 'teal' : 'amber'}>{appt.status}</Badge>
+                    <Badge variant="sage">{appt.type}</Badge>
+                  </div>
+                  {appt.callSummary && (
+                    <p className="text-xs text-cream-dk mt-1.5 line-clamp-2">
+                      {appt.callSummary}
+                    </p>
+                  )}
+                  {appt.documents && appt.documents.length > 0 && (
+                    <div className="mt-1 space-y-1">
+                      <p className="text-[11px] text-slate">
+                        Linked documents:
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {appt.documents.slice(0, 3).map((url, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => window.open(url, '_blank', 'noopener,noreferrer')}
+                            className="text-[11px] px-2 py-1 rounded-full border border-teal/40 text-teal-light hover:bg-teal/10 transition-colors"
+                          >
+                            View doc {idx + 1}
+                          </button>
+                        ))}
+                        {appt.documents.length > 3 && (
+                          <span className="text-[11px] text-slate">
+                            +{appt.documents.length - 3} more
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* <Button icon="eye" className="w-full justify-center mt-4 sm:mt-5">View All Patients</Button> */}
           </Card>
         </div>
       </div>
