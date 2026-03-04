@@ -107,6 +107,22 @@ function Bubble({ msg, isFirst, isLast, audioPlaying, onPlayAudio }) {
             </span>
           )}
 
+          {/* Bot-side related documents, if any */}
+          {!isUser && Array.isArray(msg.documents) && msg.documents.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {msg.documents.map((url, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => window.open(url, '_blank', 'noopener,noreferrer')}
+                  className="px-2.5 py-1 rounded-full text-[11px] border border-teal/50 text-teal-light bg-teal/10 hover:bg-teal/20 transition-colors"
+                >
+                  Document {idx + 1}
+                </button>
+              ))}
+            </div>
+          )}
+
           {msg.type === 'audio' && msg.audioURL && (
             <div style={{ paddingRight: '60px' }}>
               <div className="flex items-center gap-2 my-0.5">

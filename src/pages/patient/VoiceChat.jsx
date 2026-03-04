@@ -175,13 +175,28 @@ export default function VoiceChat() {
       })
       if (!res.ok) throw new Error(`Server error: ${res.status}`)
 
-      const { audio, history } = await res.json()
+      const { audio, history, documents } = await res.json()
 
       if (history && Array.isArray(history)) {
         setMessages(historyToMessages(history))
       }
 
       if (audio) playBotAudio(audio)
+
+      // Attach related documents to the latest bot message as structured data
+      if (Array.isArray(documents) && documents.length > 0) {
+        setMessages(prev => {
+          if (!prev.length) return prev
+          const next = [...prev]
+          for (let i = next.length - 1; i >= 0; i--) {
+            if (next[i]?.sender === 'bot') {
+              next[i] = { ...next[i], documents }
+              break
+            }
+          }
+          return next
+        })
+      }
 
     } catch (err) {
       console.error('Talk request failed:', err)
@@ -207,7 +222,7 @@ export default function VoiceChat() {
       })
       if (!res.ok) throw new Error(`Server error: ${res.status}`)
 
-      const { audio, history } = await res.json()
+      const { audio, history, documents } = await res.json()
 
       if (history && Array.isArray(history)) {
         setMessages(historyToMessages(history))
@@ -216,6 +231,20 @@ export default function VoiceChat() {
       }
 
       if (audio) playBotAudio(audio)
+
+      if (Array.isArray(documents) && documents.length > 0) {
+        setMessages(prev => {
+          if (!prev.length) return prev
+          const next = [...prev]
+          for (let i = next.length - 1; i >= 0; i--) {
+            if (next[i]?.sender === 'bot') {
+              next[i] = { ...next[i], documents }
+              break
+            }
+          }
+          return next
+        })
+      }
 
     } catch (err) {
       console.error('Talk request failed:', err)
@@ -395,21 +424,6 @@ export default function VoiceChat() {
                   {q}
                 </button>
               ))}
-            </div>
-          </div>
-
-          <div className="card-glass p-4">
-            <div className="flex items-center justify-between mb-2">
-              <p className="section-label !mb-0">Session</p>
-              <span className="badge badge-teal">Encrypted</span>
-            </div>
-            <p className="text-[11px] text-slate leading-relaxed">
-              Secured with AES-256 encryption. AI responses should not replace professional medical advice.
-            </p>
-            <div className="mt-3 pt-3 border-t border-cream/[0.08]">
-              <p className="text-[10px] text-slate/60 font-mono truncate">
-                session: {sessionIdRef.current.slice(0, 16)}…
-              </p>
             </div>
           </div>
 
