@@ -59,8 +59,10 @@ export default function DoctorSchedule() {
         if (!res.ok) throw new Error('Failed to load appointments')
         const data = await res.json()
         if (cancelled) return
+        // Use appointment date/time (when patient asked to book) for display; fallback to booking date
         const mapped = (data || []).map((a, idx) => {
-          const d = a.date ? new Date(a.date) : null
+          const raw = a.appointmentDateTime ?? a.date
+          const d = raw ? new Date(raw) : null
 
           return {
             id: a._id || idx,
@@ -82,7 +84,7 @@ export default function DoctorSchedule() {
             callSummary: a.call_summary,
             documents: a.related_documents || [],
             historySummary: a.history_summary,
-            rawDate: a.date,
+            rawDate: raw,
             hourIndex: d ? HOURS.findIndex(h => Number(h.split(':')[0]) === d.getHours()) : -1,
           }
         })

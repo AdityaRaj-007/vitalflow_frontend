@@ -91,15 +91,17 @@ export default function PatientHome() {
         //     historySummary: a.history_summary,
         //   }
         // })
+        // Use appointment date/time (when patient asked to book) for display; fallback to booking date
         const mapped = (data || [])
           .map((a, idx) => {
-            const d = a.date ? new Date(a.date) : null
+            const raw = a.appointmentDateTime ?? a.date
+            const d = raw ? new Date(raw) : null
 
             return {
               id: a._id || idx,
               doctor: a.doctorOrClinic || 'Doctor',
               specialty: a.location || 'Visit',
-              dateObj: d, // keep real Date for sorting
+              dateObj: d, // keep real Date for sorting/filtering
               date: d
                 ? d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
                 : '',
