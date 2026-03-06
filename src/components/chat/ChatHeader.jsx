@@ -30,7 +30,7 @@ export default function ChatHeader({ status = 'idle' }) {
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-cream leading-tight">MedicAI Assistant</p>
+        <p className="text-sm font-semibold text-cream leading-tight">VitalFlow Assistant</p>
         <p className={`text-[11px] leading-tight transition-colors duration-300 ${statusColor}`}>
           {statusLabel}
         </p>

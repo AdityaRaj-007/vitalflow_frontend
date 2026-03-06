@@ -121,7 +121,7 @@ export default function ChatInput({
         onChange={e => setInput(e.target.value)}
         onKeyDown={handleKeyDown}
         disabled={disabled}
-        placeholder={isProcessing ? 'AI is responding…' : 'Message MedicAI…'}
+        placeholder={isProcessing ? 'AI is responding…' : 'Message VitalFlow…'}
         className="flex-1 rounded-full px-4 py-2 text-sm outline-none transition-all disabled:opacity-50"
         style={{
           background:   'rgba(247,243,236,0.08)',

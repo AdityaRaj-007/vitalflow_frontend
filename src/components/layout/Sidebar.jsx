@@ -4,7 +4,7 @@ import Icon from '../ui/Icon'
 
 const PATIENT_LINKS = [
   { path: '/',          icon: 'home',      label: 'Dashboard' },
-  { path: '/booking',   icon: 'mic',       label: 'Voice Chat' },
+  { path: '/booking',   icon: 'phone',       label: 'Book Appointment' },
   { path: '/documents', icon: 'upload',    label: 'Documents' },
   { path: '/history',   icon: 'heart',     label: 'Medical History' },
 ]
@@ -30,7 +30,7 @@ export default function Sidebar({ onClose }) {
   }
 
   return (
-    <aside className="w-64 lg:w-56 h-full min-h-screen bg-navy border-r border-cream/[0.07] flex flex-col px-4 py-6">
+    <aside className="w-64 h-screen bg-navy border-r border-cream/[0.07] flex flex-col px-4 py-6 overflow-hidden">
 
       <div className="flex items-center justify-between px-2 mb-8">
         <div className="flex items-center gap-3">
@@ -39,7 +39,7 @@ export default function Sidebar({ onClose }) {
           </div>
           <div>
             <p className="font-serif text-base font-bold text-cream leading-none">
-              Medic<span className="text-teal-light">AI</span>
+              Vital<span className="text-teal-light">Flow</span>
             </p>
             <p className="text-[10px] text-slate uppercase tracking-widest mt-0.5 capitalize">
               {auth?.role}
@@ -55,7 +55,7 @@ export default function Sidebar({ onClose }) {
         </button>
       </div>
 
-      <nav className="flex-1">
+      <nav className="flex-1 overflow-y-auto">
         <p className="section-label px-3.5 mb-2">Navigation</p>
         {links.map(link => {
           const active = pathname === link.path
