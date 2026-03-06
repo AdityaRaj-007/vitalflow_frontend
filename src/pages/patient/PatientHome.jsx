@@ -108,7 +108,7 @@ export default function PatientHome() {
               time: d
                 ? d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
                 : '',
-              status: 'confirmed',
+              status: a.status || 'pending',
               callSummary: a.call_summary,
               documents: a.related_documents || [],
               historySummary: a.history_summary,
@@ -221,7 +221,17 @@ export default function PatientHome() {
                   <p className="text-sm font-medium text-cream truncate">{appt.doctor}</p>
                   <p className="text-xs text-slate">{appt.specialty}</p>
                   <div className="flex flex-wrap items-center gap-2 mt-1.5">
-                    <Badge variant={appt.status === 'confirmed' ? 'teal' : 'amber'}>{appt.status}</Badge>
+                    <Badge
+                      variant={
+                        appt.status === 'confirmed'
+                          ? 'teal'
+                          : appt.status === 'rejected'
+                          ? 'rose'
+                          : 'amber'
+                      }
+                    >
+                      {appt.status}
+                    </Badge>
                     <span className="text-[11px] text-slate">{appt.date} · {appt.time}</span>
                   </div>
                   {appt.callSummary && (
