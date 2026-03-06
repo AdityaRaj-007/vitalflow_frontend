@@ -79,7 +79,7 @@ export default function DoctorSchedule() {
               : '',
             duration: 1,
             type: a.doctorOrClinic || 'Consultation',
-            status: 'confirmed',
+            status: a.status || 'pending',
             color: '#0B6E6E',
             callSummary: a.call_summary,
             documents: a.related_documents || [],
@@ -234,9 +234,67 @@ export default function DoctorSchedule() {
                       {appt.dateLabel} · {appt.time}
                     </span>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    <Badge variant={appt.status === 'confirmed' ? 'teal' : 'amber'}>{appt.status}</Badge>
+                  <div className="flex flex-wrap gap-2 items-center">
+                    <Badge
+                      variant={
+                        appt.status === 'confirmed'
+                          ? 'teal'
+                          : appt.status === 'rejected'
+                          ? 'rose'
+                          : 'amber'
+                      }
+                    >
+                      {appt.status}
+                    </Badge>
                     <Badge variant="sage">{appt.type}</Badge>
+                    {appt.status === 'pending' && (
+                      <div className="flex gap-1 ml-auto">
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            try {
+                              await fetch(`${API_BASE_URL}/users/${PATIENT_ID}/appointments/${appt.id}`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ status: 'confirmed' }),
+                              })
+                              setAppointments(prev =>
+                                prev.map(a =>
+                                  a.id === appt.id ? { ...a, status: 'confirmed' } : a,
+                                ),
+                              )
+                            } catch (err) {
+                              console.error('Failed to confirm appointment', err)
+                            }
+                          }}
+                          className="text-[11px] px-2 py-1 rounded-full bg-teal/20 text-teal-light hover:bg-teal/30 transition-colors"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            try {
+                              await fetch(`${API_BASE_URL}/users/${PATIENT_ID}/appointments/${appt.id}`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ status: 'rejected' }),
+                              })
+                              setAppointments(prev =>
+                                prev.map(a =>
+                                  a.id === appt.id ? { ...a, status: 'rejected' } : a,
+                                ),
+                              )
+                            } catch (err) {
+                              console.error('Failed to reject appointment', err)
+                            }
+                          }}
+                          className="text-[11px] px-2 py-1 rounded-full bg-rose/20 text-rose hover:bg-rose/30 transition-colors"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    )}
                   </div>
                   {appt.callSummary && (
                     <p className="text-xs text-cream-dk mt-1.5 line-clamp-2">
