@@ -4,10 +4,10 @@ import Card from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
 import Button from '../../components/ui/Button'
 import Icon from '../../components/ui/Icon'
+import { useAuth } from '../../context/AuthContext'
 
 const STATUS_VARIANT = { processed: 'teal', processing: 'amber', uploading: 'sage' }
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
-const USER_ID = 1
 
 function formatFileSize(bytes) {
   if (!bytes && bytes !== 0) return ''
@@ -21,6 +21,7 @@ function formatShortDate(date) {
 }
 
 export default function DocumentUpload() {
+  const { auth } = useAuth()
   const [dragging, setDragging] = useState(false)
   const [files, setFiles] = useState([])
   const [selectedFiles, setSelectedFiles] = useState([])
@@ -33,12 +34,13 @@ export default function DocumentUpload() {
   const fileInputRef = useRef(null)
 
   useEffect(() => {
+    if (!auth?.id) return
     let cancelled = false
 
     const fetchDocuments = async () => {
       setInitialLoading(true)
       try {
-        const response = await fetch(`${API_BASE_URL}/users/${USER_ID}/documents`)
+        const response = await fetch(`${API_BASE_URL}/users/${auth?.id}/documents`)
         if (!response.ok) throw new Error('Failed to fetch documents')
         const docs = await response.json()
         if (cancelled) return
@@ -66,7 +68,7 @@ export default function DocumentUpload() {
 
     fetchDocuments()
     return () => { cancelled = true }
-  }, [])
+  }, [auth?.id])
 
   const addToSelectedFiles = (incoming) => {
     setSelectedFiles(prev => [...prev, ...incoming])
@@ -116,7 +118,7 @@ export default function DocumentUpload() {
           formData.append('type', docType)
           if (notes.trim()) formData.append('description', notes.trim())
 
-          const response = await fetch(`${API_BASE_URL}/users/${USER_ID}/documents`, {
+          const response = await fetch(`${API_BASE_URL}/users/${auth?.id}/documents`, {
             method: 'POST',
             body: formData,
           })

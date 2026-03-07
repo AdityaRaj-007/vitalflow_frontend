@@ -4,24 +4,26 @@ import Card from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
 import Button from '../../components/ui/Button'
 import Icon from '../../components/ui/Icon'
+import { useAuth } from '../../context/AuthContext'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
-const PATIENT_ID = 1
 
 const STATUS_VARIANT = { managed: 'teal', monitoring: 'amber', resolved: 'sage' }
 const TYPE_VARIANT = { lab: 'teal', imaging: 'sage', visit: 'amber', prescription: 'rose' }
 
 export default function MedicalHistory() {
+  const { auth } = useAuth()
   const [tab, setTab] = useState('conditions')
   const [conditions, setConditions] = useState([])
   const [medications, setMedications] = useState([])
   const [timeline, setTimeline] = useState([])
 
   useEffect(() => {
+    if (!auth?.id) return
     let cancelled = false
     const load = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/users/${PATIENT_ID}/history`)
+        const res = await fetch(`${API_BASE_URL}/users/${auth.id}/history`)
         if (!res.ok) throw new Error('Failed to load medical history')
         const data = await res.json()
         if (cancelled) return
@@ -36,7 +38,7 @@ export default function MedicalHistory() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [auth?.id])
 
   return (
     <div className="animate-fade-in">

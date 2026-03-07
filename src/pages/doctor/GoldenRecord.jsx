@@ -5,10 +5,10 @@ import Badge from '../../components/ui/Badge'
 import Icon from '../../components/ui/Icon'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
-const PATIENT_ID = 1
 
 export default function GoldenRecord() {
-  const [selected, setSelected] = useState(0)
+  const [patients, setPatients] = useState([])
+  const [selectedPatientId, setSelectedPatientId] = useState(null)
   const [record, setRecord] = useState({
     patientName: 'Patient',
     summary: 'Loading patient summary…',
@@ -21,9 +21,30 @@ export default function GoldenRecord() {
 
   useEffect(() => {
     let cancelled = false
+    const loadPatients = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/users`)
+        if (!res.ok) throw new Error('Failed to load patients')
+        const data = await res.json()
+        if (cancelled) return
+        setPatients(data || [])
+        if (data?.length > 0 && !selectedPatientId) {
+          setSelectedPatientId(data[0].id)
+        }
+      } catch (e) {
+        if (!cancelled) console.error(e)
+      }
+    }
+    loadPatients()
+    return () => { cancelled = true }
+  }, [])
+
+  useEffect(() => {
+    if (!selectedPatientId) return
+    let cancelled = false
     const load = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/users/${PATIENT_ID}/golden-record`)
+        const res = await fetch(`${API_BASE_URL}/users/${selectedPatientId}/golden-record`)
         if (!res.ok) throw new Error('Failed to load golden record')
         const data = await res.json()
         if (cancelled) return
@@ -50,26 +71,26 @@ export default function GoldenRecord() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [selectedPatientId])
 
   return (
     <div className="animate-fade-in">
       <Header title="Golden Record" subtitle="AI-synthesized patient brief — for clinical review only" />
 
       <div className="flex gap-2 mb-4 lg:hidden overflow-x-auto pb-1">
-        {[record.patientName].map((p, i) => (
+        {patients.map((p) => (
           <button
-            key={i}
-            onClick={() => setSelected(i)}
+            key={p.id}
+            onClick={() => setSelectedPatientId(p.id)}
             className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-sm whitespace-nowrap transition-all flex-shrink-0
-              ${selected === i
+              ${selectedPatientId === p.id
                 ? 'bg-teal/20 border-teal/40 text-teal-light font-medium'
                 : 'bg-cream/[0.04] border-cream/[0.1] text-slate hover:text-cream'}`}
           >
             <div className="w-6 h-6 rounded-full bg-gradient-to-br from-teal/60 to-amber/40 flex items-center justify-center text-[10px] font-semibold text-cream shrink-0">
-              {p.split(' ').map(n => n[0]).join('')}
+              {(p.email || 'P').split('@')[0].slice(0, 2).toUpperCase()}
             </div>
-            {p}
+            {p.email}
           </button>
         ))}
       </div>
@@ -77,17 +98,17 @@ export default function GoldenRecord() {
       <div className="flex flex-col lg:grid lg:grid-cols-[180px_1fr] gap-5">
 
         <Card className="hidden lg:block !p-4 self-start">
-          <p className="section-label mb-3">Patients Today</p>
-          {[record.patientName].map((p, i) => (
+          <p className="section-label mb-3">Select Patient</p>
+          {patients.map((p) => (
             <button
-              key={i}
-              onClick={() => setSelected(i)}
-              className={`nav-link w-full mb-0.5 ${selected === i ? 'active' : ''}`}
+              key={p.id}
+              onClick={() => setSelectedPatientId(p.id)}
+              className={`nav-link w-full mb-0.5 ${selectedPatientId === p.id ? 'active' : ''}`}
             >
               <div className="w-7 h-7 rounded-full bg-gradient-to-br from-teal/60 to-amber/40 flex items-center justify-center text-[11px] font-semibold text-cream shrink-0">
-                {p.split(' ').map(n => n[0]).join('')}
+                {(p.email || 'P').split('@')[0].slice(0, 2).toUpperCase()}
               </div>
-              {p}
+              {p.email}
             </button>
           ))}
         </Card>

@@ -6,9 +6,9 @@ import Badge from '../../components/ui/Badge'
 import Button from '../../components/ui/Button'
 import Icon from '../../components/ui/Icon'
 import MetricCard from '../../components/shared/MetricCard'
+import { useAuth } from '../../context/AuthContext'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
-const PATIENT_ID = 1
 
 const VITALS = [
   { label: 'Blood Pressure', value: '118/76', unit: 'mmHg' },
@@ -32,10 +32,12 @@ const COLOR_CLASSES = {
 }
 
 export default function PatientHome() {
+  const { auth } = useAuth()
   const navigate = useNavigate()
   const [appointments, setAppointments] = useState([])
   const [filterMode, setFilterMode] = useState('today') // 'today' | 'tomorrow' | 'custom'
   const [customDate, setCustomDate] = useState('');
+  const [userDocuments, setUserDocuments] = useState([])
 
   const filteredAppointments = appointments.filter(appt => {
     if (!appt.dateObj) return false
@@ -66,10 +68,11 @@ export default function PatientHome() {
 
 
   useEffect(() => {
+    if (!auth?.id) return
     let cancelled = false
     const loadAppointments = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/users/${PATIENT_ID}/appointments`)
+        const res = await fetch(`${API_BASE_URL}/users/${auth.id}/appointments`)
         if (!res.ok) throw new Error('Failed to load appointments')
         const data = await res.json()
         if (cancelled) return
@@ -128,18 +131,23 @@ export default function PatientHome() {
       }
     }
     loadAppointments()
+    const fetchUserDocuments = async () => {
+      const response = await fetch(`${API_BASE_URL}/users/${auth.id}/documents`)
+      const data = await response.json()
+      setUserDocuments(data)
+    }
+    fetchUserDocuments()
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [auth?.id])
 
   const todayDate = new Date().toDateString();
 
   return (
     <div className="animate-fade-in">
-      {/* take user user name from conext and display here instead of hardcoded "James" */}
       <Header
-        title="Good morning, James."
+        title={`Good morning, ${auth?.name || 'there'}.`}
         subtitle={`Here's your health overview for today ${todayDate.split(' ')[1]} ${todayDate.split(' ')[2]}.`}
         actions={<Button variant="ghost" icon="bell">Alerts</Button>}
       />
@@ -152,7 +160,7 @@ export default function PatientHome() {
           icon="calendar"
           color="teal"
         />
-        <MetricCard label="Documents" value="14" sub="3 pending" icon="file" color="amber" />
+        <MetricCard label="Documents" value={userDocuments.length.toString()} icon="file" color="amber" />
         <MetricCard label="Active Meds" value="3" sub="Refills current" icon="heart" color="sage" />
         <MetricCard label="Health Score" value="87" sub="↑ 4 pts this month" icon="star" color="teal" trend={5} />
       </div>

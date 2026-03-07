@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
 import {
   LiveKitRoom,
   RoomAudioRenderer,
@@ -212,7 +213,7 @@ function DoctorResults({ onDoctorsChange }) {
   }, [room])
 
   const handleSelect = async (doc) => {
-    await send(`Please book my appointment with ${doc.name} (ID: ${doc.id}) at ${doc.availableAt}.`)
+    await send(`Please book my appointment with ${doc.name} (ID: ${doc.id}) at ${doc.availableAt} (Location: ${doc.location}).`)
     setDoctors([])
   }
 
@@ -432,6 +433,7 @@ function InCallScreen({ onEndCall, onOpenChat }) {
    ROOT
 ═══════════════════════════════════════════════════════════════════════ */
 export default function VoiceAgent() {
+  const { auth } = useAuth()
   const [inCall,            setInCall]            = useState(false)
   const [connectionDetails, setConnectionDetails] = useState(null)
   const navigate = useNavigate()
@@ -439,7 +441,7 @@ export default function VoiceAgent() {
   const handleStartCall = async () => {
     setInCall(true)
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/get-token/1`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/get-token/${auth?.id ?? ''}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       })
