@@ -17,10 +17,11 @@ const VITALS = [
 ]
 
 const QUICK_ACTIONS = [
-  { icon: 'mic', label: 'Voice Chat', desc: 'Chat with AI assistant', color: 'teal', page: '/booking' },
+  { icon: 'phone', label: 'Book Appointment', desc: "Book an doctor's appointment", color: 'teal', page: '/booking' },  
   { icon: 'upload', label: 'Upload Docs', desc: 'Add records', color: 'amber', page: '/documents' },
   { icon: 'heart', label: 'Med History', desc: 'View records', color: 'rose', page: '/history' },
-  { icon: 'search', label: 'Find Doctor', desc: 'Search providers', color: 'sage', page: '/' },
+  { icon: 'mic', label: 'Voice Chat', desc: 'Chat with AI assistant', color: 'teal', page: '/chat' },
+  
 ]
 
 const COLOR_CLASSES = {
@@ -62,6 +63,7 @@ export default function PatientHome() {
 
     return true
   })
+
 
   useEffect(() => {
     let cancelled = false
@@ -119,6 +121,7 @@ export default function PatientHome() {
             if (!b.dateObj) return -1
             return a.dateObj - b.dateObj
           })
+          console.log(mapped)
         setAppointments(mapped)
       } catch (e) {
         console.error(e)
@@ -130,11 +133,14 @@ export default function PatientHome() {
     }
   }, [])
 
+  const todayDate = new Date().toDateString();
+
   return (
     <div className="animate-fade-in">
+      {/* take user user name from conext and display here instead of hardcoded "James" */}
       <Header
         title="Good morning, James."
-        subtitle="Here's your health overview for today — Feb 25."
+        subtitle={`Here's your health overview for today ${todayDate.split(' ')[1]} ${todayDate.split(' ')[2]}.`}
         actions={<Button variant="ghost" icon="bell">Alerts</Button>}
       />
 
@@ -178,9 +184,9 @@ export default function PatientHome() {
         transition-colors
       "
               >
-                <option value="today">Today</option>
-                <option value="tomorrow">Tomorrow</option>
-                <option value="custom">Custom</option>
+                <option value="today" className="bg-[#0D1B3E] text-cream">Today</option>
+                <option value="tomorrow" className="bg-[#0D1B3E] text-cream">Tomorrow</option>
+                <option value="custom" className="bg-[#0D1B3E] text-cream">Custom</option>
               </select>
 
               {filterMode === 'custom' && (

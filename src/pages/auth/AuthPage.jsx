@@ -62,7 +62,7 @@ export default function AuthPage() {
               <Icon name="activity" size={20} className="text-white" />
             </div>
             <span className="font-serif text-2xl font-bold text-cream">
-              Medic<span className="text-teal-light">AI</span>
+              Vital<span className="text-teal-light">Flow</span>
             </span>
           </div>
           <h2 className="font-serif text-4xl xl:text-5xl font-bold text-cream leading-[1.15] mb-5">
@@ -93,7 +93,7 @@ export default function AuthPage() {
             <Icon name="activity" size={18} className="text-white" />
           </div>
           <span className="font-serif text-xl font-bold text-cream">
-            Medic<span className="text-teal-light">AI</span>
+            Vital<span className="text-teal-light">Flow</span>
           </span>
         </div>
 
@@ -120,8 +120,8 @@ export default function AuthPage() {
             </h3>
             <p className="text-slate text-[13px] mb-5">
               {mode === 'login'
-                ? 'Sign in to your MedicAI account'
-                : 'Get started with MedicAI today'}
+                ? 'Sign in to your VitalFlow account'
+                : 'Get started with VitalFlow today'}
             </p>
 
             {error && (

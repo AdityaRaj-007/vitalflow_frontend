@@ -29,7 +29,7 @@ const historyToMessages = (history) => [
   {
     id: uid(),
     sender: 'bot',
-    text: "Hi! I'm your MedicAI health assistant. I have access to your medical records, upcoming appointments, and lab results. Ask me anything — by voice or text.",
+    text: "Hi! I'm your VitalFlow health assistant. I have access to your medical records, upcoming appointments, and lab results. Ask me anything — by voice or text.",
     time: new Date(),
     read: false,
   },
@@ -54,7 +54,7 @@ export default function VoiceChat() {
     {
       id: uid(),
       sender: 'bot',
-      text: "Hi! I'm your MedicAI health assistant 👋  I have access to your medical records, upcoming appointments, and lab results. Ask me anything — by voice or text.",
+      text: "Hi! I'm your VitalFlow health assistant 👋  I have access to your medical records, upcoming appointments, and lab results. Ask me anything — by voice or text.",
       time: new Date(),
       read: false,
     },
@@ -390,7 +390,7 @@ export default function VoiceChat() {
           />
         </div>
 
-        <div className="hidden xl:flex w-60 flex-col gap-4 shrink-0">
+        <div className="hidden lg:flex w-60 flex-col gap-4 shrink-0">
 
           <div className="card-glass p-4">
             <p className="section-label mb-3">Health Context</p>

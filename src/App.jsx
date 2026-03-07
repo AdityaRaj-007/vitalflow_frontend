@@ -10,6 +10,7 @@ import DoctorSchedule from './pages/doctor/DoctorSchedule'
 import GoldenRecord from './pages/doctor/GoldenRecord'
 import DocReview from './pages/doctor/DocReview'
 import PriorAuth from './pages/doctor/PriorAuth'
+import VoiceAgent from "./pages/patient/VoiceAgent";
 
 function App() {
   const { auth } = useAuth();
@@ -23,7 +24,8 @@ function App() {
         {auth.role === 'patient' ? (
           <>
             <Route path="/"          element={<PatientHome />} />
-            <Route path="/booking"   element={<VoiceChat />} />
+            <Route path="/booking"   element={<VoiceAgent/>} />
+            <Route path="/chat"     element={<VoiceChat />} />
             <Route path="/documents" element={<DocumentUpload />} />
             <Route path="/history"   element={<MedicalHistory />} />
             {/* <Route path="*"          element={<Navigate to="/" replace />} /> */}

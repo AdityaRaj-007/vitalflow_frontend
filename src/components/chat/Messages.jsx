@@ -97,7 +97,7 @@ function Bubble({ msg, isFirst, isLast, audioPlaying, onPlayAudio }) {
         >
           {isFirst && !isUser && (
             <p className="text-[10px] font-semibold text-teal-light mb-0.5 uppercase tracking-wide">
-              MedicAI
+              VitalFlow
             </p>
           )}
 
