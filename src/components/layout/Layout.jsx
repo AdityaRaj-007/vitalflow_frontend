@@ -6,7 +6,7 @@ export default function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
-    <div className="h-screen flex bg-obsidian">
+    <div className="min-h-screen flex bg-obsidian">
 
       {sidebarOpen && (
         <div
