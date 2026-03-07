@@ -390,7 +390,7 @@ export default function VoiceChat() {
           />
         </div>
 
-        <div className="hidden xl:flex w-60 flex-col gap-4 shrink-0">
+        <div className="hidden lg:flex w-60 flex-col gap-4 shrink-0">
 
           <div className="card-glass p-4">
             <p className="section-label mb-3">Health Context</p>
