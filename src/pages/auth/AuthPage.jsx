@@ -6,12 +6,16 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
 export default function AuthPage() {
   const { login } = useAuth()
-  const [mode, setMode]       = useState('login')
-  const [role, setRole]       = useState('patient')
-  const [email, setEmail]     = useState('')
-  const [password, setPass]   = useState('')
+  const [mode, setMode] = useState('login')
+  const [role, setRole] = useState('patient')
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPass] = useState('')
+  const [specialization, setSpecialization] = useState('')
+  const [clinicAddress, setClinicAddress] = useState('')
+  const [phone, setPhone] = useState('')
   const [loading, setLoading] = useState(false)
-  const [error, setError]     = useState(null)
+  const [error, setError] = useState(null)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -19,22 +23,66 @@ export default function AuthPage() {
     setLoading(true)
 
     try {
-      if (mode === 'register') {
-        const res = await fetch(`${API_BASE_URL}/users`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password }),
-        })
-
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}))
-          throw new Error(data.message || 'Failed to create account')
+      if (role === 'doctor') {
+        if (mode === 'register') {
+          const res = await fetch(`${API_BASE_URL}/doctors`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name,
+              email,
+              password,
+              specialization,
+              clinic_address: clinicAddress,
+              phone: phone || undefined,
+            }),
+          })
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}))
+            throw new Error(data.message || 'Failed to create doctor account')
+          }
+          const data = await res.json()
+          login('doctor', { id: data._id, name: data.name, email: data.email })
+        } else {
+          const res = await fetch(`${API_BASE_URL}/doctors/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password }),
+          })
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}))
+            throw new Error(data.message || 'Invalid email or password')
+          }
+          const data = await res.json()
+          login('doctor', { id: data._id, name: data.name, email: data.email })
+        }
+      } else {
+        if (mode === 'register') {
+          const res = await fetch(`${API_BASE_URL}/users`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password }),
+          })
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}))
+            throw new Error(data.message || 'Failed to create account')
+          }
+          const data = await res.json()
+          login('patient', { id: data.id, name: data.email?.split('@')[0] || 'Patient', email: data.email })
+        } else {
+          const res = await fetch(`${API_BASE_URL}/users/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password }),
+          })
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}))
+            throw new Error(data.message || 'Invalid email or password')
+          }
+          const data = await res.json()
+          login('patient', { id: data.id, name: data.email?.split('@')[0], email: data.email })
         }
       }
-
-      // For this prototype, we don’t gate login on backend auth;
-      // we just ensure a user exists, then set the app role.
-      login(role)
     } catch (err) {
       console.error(err)
       setError(err.message || 'Something went wrong. Please try again.')
@@ -43,11 +91,45 @@ export default function AuthPage() {
     }
   }
 
-  const features = [
-    { icon: 'mic',    text: 'Book appointments with your voice' },
-    { icon: 'shield', text: 'End-to-end encrypted health records' },
-    { icon: 'star',   text: 'AI-generated Golden Record summaries' },
+  const handleRoleChange = (r) => {
+    setRole(r)
+    setError(null)
+  }
+
+  const handleModeChange = () => {
+    setMode(m => m === 'login' ? 'register' : 'login')
+    setError(null)
+  }
+
+  const SPECIALIZATIONS = [
+    'General Medicine',
+    'Internal Medicine',
+    'Cardiology',
+    'Dermatology',
+    'Endocrinology',
+    'Gastroenterology',
+    'Neurology',
+    'Orthopedic',
+    'Pediatrics',
+    'Psychiatry',
+    'Pulmonology',
+    'Ophthalmology',
+    'ENT',
+    'Gynecology',
+    'Urology',
+    'Dental',
+    'Oncology',
+    'Radiology',
   ]
+
+  const features = [
+    { icon: 'mic', text: 'Book appointments with your voice' },
+    { icon: 'shield', text: 'End-to-end encrypted health records' },
+    { icon: 'star', text: 'AI-generated Golden Record summaries' },
+  ]
+
+  const isDoctor = role === 'doctor'
+  const showDoctorFields = isDoctor && mode === 'register'
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-obsidian overflow-hidden relative">
@@ -104,7 +186,8 @@ export default function AuthPage() {
               {['patient', 'doctor'].map(r => (
                 <button
                   key={r}
-                  onClick={() => setRole(r)}
+                  type="button"
+                  onClick={() => handleRoleChange(r)}
                   className={`flex-1 py-2 rounded-lg text-sm font-medium font-sans capitalize transition-all duration-200
                     ${role === r
                       ? 'bg-gradient-to-br from-teal to-teal-light text-white'
@@ -120,8 +203,8 @@ export default function AuthPage() {
             </h3>
             <p className="text-slate text-[13px] mb-5">
               {mode === 'login'
-                ? 'Sign in to your VitalFlow account'
-                : 'Get started with VitalFlow today'}
+                ? `Sign in to your VitalFlow ${role} account`
+                : `Get started as a ${role}`}
             </p>
 
             {error && (
@@ -131,11 +214,61 @@ export default function AuthPage() {
             )}
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-              {mode === 'register' && (
+              {(showDoctorFields || (mode === 'register' && !isDoctor)) && (
                 <div>
                   <label className="form-label">Full Name</label>
-                  <input className="form-input" type="text" placeholder="James Park" />
+                  <input
+                    className="form-input"
+                    type="text"
+                    placeholder={isDoctor ? 'Dr. Sarah Chen' : 'James Park'}
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    required={showDoctorFields}
+                  />
                 </div>
+              )}
+              {showDoctorFields && (
+                <>
+                  <div>
+                    <label className="form-label">Specialization</label>
+                    <select
+                      className="form-input"
+                      value={specialization}
+                      onChange={e => setSpecialization(e.target.value)}
+                      required
+                    >
+                      <option value="" disabled>
+                        Select your specialization
+                      </option>
+                      {SPECIALIZATIONS.map(spec => (
+                        <option key={spec} value={spec}>
+                          {spec}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="form-label">Clinic Address</label>
+                    <input
+                      className="form-input"
+                      type="text"
+                      placeholder="123 Health St, City"
+                      value={clinicAddress}
+                      onChange={e => setClinicAddress(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="form-label">Phone (optional)</label>
+                    <input
+                      className="form-input"
+                      type="tel"
+                      placeholder="+1 234 567 8900"
+                      value={phone}
+                      onChange={e => setPhone(e.target.value)}
+                    />
+                  </div>
+                </>
               )}
               <div>
                 <label className="form-label">Email Address</label>
@@ -145,6 +278,7 @@ export default function AuthPage() {
                   placeholder="you@example.com"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
+                  required
                 />
               </div>
               <div>
@@ -155,6 +289,7 @@ export default function AuthPage() {
                   placeholder="••••••••"
                   value={password}
                   onChange={e => setPass(e.target.value)}
+                  required
                 />
               </div>
 
@@ -172,7 +307,7 @@ export default function AuthPage() {
                 {loading ? (
                   <>
                     <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin-slow" />
-                    Signing in…
+                    {mode === 'login' ? 'Signing in…' : 'Creating account…'}
                   </>
                 ) : (mode === 'login' ? 'Sign In' : 'Create Account')}
               </button>
@@ -182,7 +317,7 @@ export default function AuthPage() {
               {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
               <span
                 className="text-teal-light font-medium cursor-pointer hover:underline"
-                onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
+                onClick={handleModeChange}
               >
                 {mode === 'login' ? 'Sign up' : 'Sign in'}
               </span>

@@ -4,9 +4,9 @@ import Messages from '../../components/chat/Messages'
 import ChatInput from '../../components/chat/ChatInput'
 import Badge from '../../components/ui/Badge'
 import Icon from '../../components/ui/Icon'
+import { useAuth } from '../../context/AuthContext'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
-const USER_ID = 1
 
 const SUGGESTED_QUESTIONS = [
   'What do my latest lab results mean?',
@@ -50,6 +50,7 @@ const historyToMessages = (history) => [
 
 
 export default function VoiceChat() {
+  const { auth } = useAuth()
   const [messages, setMessages] = useState([
     {
       id: uid(),
@@ -166,7 +167,7 @@ export default function VoiceChat() {
     const formData = new FormData()
     formData.append('audio', audioBlob, 'recording.webm')
     formData.append('sessionId', sessionIdRef.current)
-    formData.append('userId', String(USER_ID))
+    formData.append('userId', String(auth?.id ?? ''))
 
     try {
       const res = await fetch(API_BASE_URL + '/talk', {
@@ -213,7 +214,7 @@ export default function VoiceChat() {
     const formData = new FormData()
     formData.append('text', text)
     formData.append('sessionId', sessionIdRef.current)
-    formData.append('userId', String(USER_ID))
+    formData.append('userId', String(auth?.id ?? ''))
 
     try {
       const res = await fetch(API_BASE_URL + '/talk', {

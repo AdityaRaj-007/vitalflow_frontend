@@ -7,11 +7,12 @@ export function AuthProvider({ children }) {
   const [auth, setAuth] = useState(null)
   const navigate = useNavigate()
 
-  const login = (role) => {
+  const login = (role, data = {}) => {
     setAuth({
       role,
-      name: role === 'doctor' ? 'Dr. Sarah Chen' : 'James Park',
-      id:   role === 'doctor' ? 'DOC-1042' : 'P-20391',
+      name: data.name ?? (role === 'doctor' ? 'Dr. Sarah Chen' : 'James Park'),
+      id:   data.id ?? (role === 'doctor' ? 'DOC-1042' : 'P-20391'),
+      email: data.email,
     })
   }
 
