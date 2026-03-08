@@ -192,9 +192,9 @@ export default function PatientHome() {
         transition-colors
       "
               >
-                <option value="today" className="bg-[#0D1B3E] text-cream">Today</option>
-                <option value="tomorrow" className="bg-[#0D1B3E] text-cream">Tomorrow</option>
-                <option value="custom" className="bg-[#0D1B3E] text-cream">Custom</option>
+                <option value="today" className="bg-navy text-cream">Today</option>
+                <option value="tomorrow" className="bg-navy text-cream">Tomorrow</option>
+                <option value="custom" className="bg-navy text-cream">Custom</option>
               </select>
 
               {filterMode === 'custom' && (

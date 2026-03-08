@@ -354,10 +354,10 @@ export default function InsuranceDocuments() {
                     value={docType}
                     onChange={e => setDocType(e.target.value)}
                   >
-                    <option value={INSURANCE_TYPE} className="bg-[#0D1B3E] text-cream">
+                    <option value={INSURANCE_TYPE} className="bg-navy text-cream">
                       Insurance Policy
                     </option>
-                    <option value={BILL_TYPE} className="bg-[#0D1B3E] text-cream">
+                    <option value={BILL_TYPE} className="bg-navy text-cream">
                       Medical Bill
                     </option>
                   </select>

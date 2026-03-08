@@ -250,11 +250,11 @@ export default function DocumentUpload() {
                   value={docType}
                   onChange={e => setDocType(e.target.value)}
                 >
-                  <option value="Lab Results" className="bg-[#0D1B3E] text-cream">Lab Results</option>
-                  <option value="Imaging" className="bg-[#0D1B3E] text-cream">Imaging</option>
-                  <option value="Prescription" className="bg-[#0D1B3E] text-cream">Prescription</option>
-                  <option value="Referral" className="bg-[#0D1B3E] text-cream">Referral</option>
-                  <option value="Other" className="bg-[#0D1B3E] text-cream">Other</option>
+                  <option value="Lab Results" className="bg-navy text-cream">Lab Results</option>
+                  <option value="Imaging" className="bg-navy text-cream">Imaging</option>
+                  <option value="Prescription" className="bg-navy text-cream">Prescription</option>
+                  <option value="Referral" className="bg-navy text-cream">Referral</option>
+                  <option value="Other" className="bg-navy text-cream">Other</option>
                 </select>
               </div>
               <div>

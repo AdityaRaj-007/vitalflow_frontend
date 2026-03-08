@@ -139,9 +139,17 @@
 }
 
 @layer base {
+  :root.light {
+    --color-obsidian: #FAFAFA;
+    --color-navy: #FFFFFF;
+    --color-cream: #111111;
+    --color-cream-dk: #999696;
+    --color-slate: #666666;
+  }
+
   ::-webkit-scrollbar       { width: 6px; }
-  ::-webkit-scrollbar-track { background: #0D1B3E; }
-  ::-webkit-scrollbar-thumb { background: #0B6E6E; border-radius: 3px; }
+  ::-webkit-scrollbar-track { background: var(--color-navy, #0D1B3E); }
+  ::-webkit-scrollbar-thumb { background: var(--color-teal, #0B6E6E); border-radius: 3px; }
 
   body {
     font-family: var(--font-sans);
