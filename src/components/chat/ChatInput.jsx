@@ -65,10 +65,10 @@ export default function ChatInput({
             </button>
 
             <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-full"
-              style={{ background: 'rgba(11,110,110,0.12)', border: '1px solid rgba(11,110,110,0.25)' }}>
+              style={{ background: 'rgba(11,110,110,0.12)', border: '1px solid rgba(11,110,110,0.25)', minWidth: 0 }}>
               <Icon name="mic" size={14} className="text-teal-light shrink-0" />
-              <audio controls src={audioURL} className="flex-1 h-7"
-                style={{ filter: 'invert(1) hue-rotate(175deg) brightness(0.85)', minWidth: 0 }} />
+              <audio controls src={audioURL} className="h-7"
+                style={{ filter: 'invert(1) hue-rotate(175deg) brightness(0.85)', width: '100%', minWidth: 0 }} />
             </div>
 
             <button
