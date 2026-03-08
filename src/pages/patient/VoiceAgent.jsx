@@ -157,6 +157,8 @@ function PreCallScreen({ onStartCall }) {
    DOCTOR CARD
 ═══════════════════════════════════════════════════════════════════════ */
 function DoctorCard({ doc, onSelect }) {
+  const time = new Date(doc.availableAt);
+  const formattedTime = time.toLocaleString("en-US",{timeZone: "IST"});
   return (
     <div
       onClick={() => onSelect(doc)}
@@ -166,7 +168,7 @@ function DoctorCard({ doc, onSelect }) {
     >
       <h3 className="text-sm font-semibold text-[#202124] mb-0.5">{doc.name}</h3>
       <p className="text-xs text-[#5f6368] font-medium mb-0.5">{doc.speciality}</p>
-      <p className="text-xs text-[#188038] font-bold">{doc.availableAt}</p>
+      <p className="text-xs text-[#188038] font-bold">{formattedTime}</p>
     </div>
   )
 }
