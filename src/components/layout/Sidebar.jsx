@@ -3,10 +3,11 @@ import { useAuth } from '../../context/AuthContext'
 import Icon from '../ui/Icon'
 
 const PATIENT_LINKS = [
-  { path: '/',          icon: 'home',      label: 'Dashboard' },
-  { path: '/booking',   icon: 'phone',       label: 'Book Appointment' },
-  { path: '/documents', icon: 'upload',    label: 'Documents' },
-  { path: '/history',   icon: 'heart',     label: 'Medical History' },
+  { path: '/',           icon: 'home',    label: 'Dashboard' },
+  { path: '/booking',    icon: 'phone',   label: 'Book Appointment' },
+  { path: '/documents',  icon: 'upload',  label: 'Documents' },
+  { path: '/insurance',  icon: 'shield',  label: 'Insurance & Bills' },
+  { path: '/history',    icon: 'heart',   label: 'Medical History' },
 ]
 
 const DOCTOR_LINKS = [

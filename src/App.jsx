@@ -4,6 +4,7 @@ import VoiceChat from './pages/patient/VoiceChat'
 import AuthPage from "./pages/auth/AuthPage";
 import PatientHome from "./pages/patient/PatientHome";
 import DocumentUpload from "./pages/patient/DocumentUpload";
+import InsuranceDocuments from "./pages/patient/InsuranceDocuments";
 import MedicalHistory from './pages/patient/MedicalHistory'
 import Layout from './components/layout/Layout'
 import DoctorSchedule from './pages/doctor/DoctorSchedule'
@@ -27,6 +28,7 @@ function App() {
             <Route path="/booking"   element={<VoiceAgent/>} />
             <Route path="/chat"     element={<VoiceChat />} />
             <Route path="/documents" element={<DocumentUpload />} />
+            <Route path="/insurance" element={<InsuranceDocuments />} />
             <Route path="/history"   element={<MedicalHistory />} />
             {/* <Route path="*"          element={<Navigate to="/" replace />} /> */}
           </>
