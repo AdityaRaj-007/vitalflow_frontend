@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import Icon from '../../components/ui/Icon'
 
@@ -16,6 +16,21 @@ export default function AuthPage() {
   const [phone, setPhone] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [theme, setTheme] = useState(() => {
+      return localStorage.getItem('theme') || 'light';
+    });
+  
+    useEffect(() => {
+      if (theme === 'light') {
+        document.documentElement.classList.add('light');
+      } else {
+        document.documentElement.classList.remove('light');
+      }
+      localStorage.setItem('theme', theme);
+    }, [theme]);
+  
+    const toggleTheme = () => setTheme(t => t === 'dark' ? 'light' : 'dark');
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -168,7 +183,15 @@ export default function AuthPage() {
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col items-center justify-center p-5 sm:p-8 lg:p-10 min-h-screen lg:min-h-0">
+      <div className="flex-1 flex flex-col items-center justify-center p-5 sm:p-8 lg:p-10 min-h-screen lg:min-h-0 realtive">
+        <button
+          onClick={toggleTheme}
+          className="absolute top-5 right-5 w-10 h-10 flex items-center justify-center rounded-xl bg-cream/5 border border-cream/10 text-slate hover:bg-cream/10 hover:text-cream transition-colors"
+          title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+        >
+          <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={20} />
+        </button>
+              
 
         <div className="flex items-center gap-2.5 mb-8 lg:hidden">
           <div className="w-9 h-9 bg-gradient-to-br from-teal to-teal-light rounded-xl flex items-center justify-center">
@@ -241,7 +264,7 @@ export default function AuthPage() {
                         Select your specialization
                       </option>
                       {SPECIALIZATIONS.map(spec => (
-                        <option key={spec} value={spec} className="bg-[#0D1B3E] text-cream">
+                        <option key={spec} value={spec} className="bg-navy text-cream">
                           {spec}
                         </option>
                       ))}

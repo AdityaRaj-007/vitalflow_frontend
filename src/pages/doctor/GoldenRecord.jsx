@@ -127,7 +127,7 @@ export default function GoldenRecord() {
 
   return (
     <div className="animate-fade-in">
-      <Header title="Golden Record" subtitle="AI-synthesized patient brief — for clinical review only" />
+      <Header title="Golden Record" subtitle="AI-synthesized patient brief for clinical review only" />
 
       <div className="flex gap-2 mb-4 lg:hidden overflow-x-auto pb-1">
         {patients.map((p) => (
