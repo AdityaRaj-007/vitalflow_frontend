@@ -192,7 +192,7 @@ console.log(formattedDate);
                 />
               )}
             </div>
-            <Button icon="plus">Add</Button>
+            {/* <Button icon="plus">Add</Button> */}
           </div>
         }
       />

@@ -58,21 +58,25 @@ export default function Sidebar({ onClose }) {
       </div>
 
       <nav className="flex-1 overflow-y-auto">
-        <p className="section-label px-3.5 mb-2">Navigation</p>
+        {/* <p className="section-label px-3.5 mb-2">Navigation</p> */}
         {links.map(link => {
           const active = pathname === link.path
+          
           return (
             <button
               key={link.path}
               onClick={() => handleNav(link.path)}
-              className={`nav-link w-full mb-0.5 ${active ? 'active' : ''}`}
+              className={`nav-link w-full mb-0.5 
+                ${active ? "active" : ""} 
+              `}
             >
               <Icon
                 name={link.icon}
                 size={16}
-                className={active ? 'text-teal-light' : 'text-slate'}
+                className={active ? "text-teal-light" : "text-slate"}
               />
-              {link.label}{(link.label === 'Doc Review' || link.label === 'Prior Auth') && <Badge variant={'teal'} className='text-xs'>Beta</Badge>}
+              {link.label}
+              {(link.label === 'Doc Review' || link.label === 'Prior Auth') && <Badge variant={'teal'} className='text-xs'>Beta</Badge>}
             </button>
           )
         })}

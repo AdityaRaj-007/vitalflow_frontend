@@ -31,9 +31,9 @@ export default function PriorAuth() {
   return (
     <div className="animate-fade-in">
       <Header
-        title="Prior Authorization"
+        title="Prior Authorization (Coming Soon)"
         subtitle="Track and manage insurance pre-auth requests"
-        actions={<Button icon="plus">New</Button>}
+        actions={<Button icon="plus" disabled>New</Button>}
       />
 
       <div className="grid grid-cols-3 gap-3 md:gap-4 mb-5">

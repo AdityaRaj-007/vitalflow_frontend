@@ -26,7 +26,7 @@ export default function DocReview() {
   return (
     <div className="animate-fade-in">
       <Header
-        title="Document Review"
+        title="Document Review (Coming Soon)"
         subtitle="Review and annotate uploaded patient documents"
         actions={
           <button
@@ -85,7 +85,7 @@ export default function DocReview() {
             <div className="flex flex-wrap items-center gap-2 px-4 sm:px-5 py-3 sm:py-3.5 border-b border-cream/[0.08]">
               <span className="text-sm font-medium text-cream flex-1 truncate">{DOCS[selected].name}</span>
               <Button variant="ghost" icon="download">Export</Button>
-              <Button icon="check">Mark Reviewed</Button>
+              <Button icon="check" disabled>Mark Reviewed</Button>
             </div>
 
             <div className="bg-cream/[0.02] p-4 sm:p-8 overflow-x-auto">
@@ -115,10 +115,11 @@ export default function DocReview() {
               onChange={e => setNotes(e.target.value)}
               className="form-input resize-none h-20 sm:h-24 mb-3"
               placeholder="Add your clinical annotations and observations…"
+              disabled
             />
             <div className="flex flex-wrap gap-3">
-              <Button icon="check">Save & Approve</Button>
-              <Button variant="secondary">Flag for Review</Button>
+              <Button icon="check" disabled>Save & Approve</Button>
+              <Button variant="secondary" disabled>Flag for Review</Button>
             </div>
           </Card>
         </div>
