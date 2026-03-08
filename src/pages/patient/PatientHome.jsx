@@ -257,10 +257,10 @@ export default function PatientHome() {
                     <div className="flex items-center gap-2 mt-2 flex-wrap">
                       <span className="text-[11px] text-slate">Documents:</span>
 
-                      {appt.documents.map((docUrl, docIdx) => (
+                      {[...new Set(appt.documents)].map((docUrl, docIdx) => (
                         <button
                           key={docIdx}
-                          onClick={() => window.open(docUrl, '_blank', 'noopener,noreferrer')}
+                          onClick={() => window.open(docUrl, "_blank", "noopener,noreferrer")}
                           className="w-7 h-7 bg-amber/20 hover:bg-amber/30 rounded-lg flex items-center justify-center transition-colors"
                           title="Open document"
                         >

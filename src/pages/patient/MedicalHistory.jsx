@@ -13,7 +13,7 @@ const TYPE_VARIANT = { lab: 'teal', imaging: 'sage', visit: 'amber', prescriptio
 
 export default function MedicalHistory() {
   const { auth } = useAuth()
-  const [tab, setTab] = useState('conditions')
+  const [tab, setTab] = useState('timeline')
   const [conditions, setConditions] = useState([])
   const [medications, setMedications] = useState([])
   const [timeline, setTimeline] = useState([])
@@ -49,7 +49,7 @@ export default function MedicalHistory() {
       />
 
       <div className="flex gap-1 bg-cream/[0.05] rounded-xl p-1 mb-5 overflow-x-auto">
-        {['conditions', 'medications', 'timeline'].map(t => (
+        {[ 'timeline', 'medications'].map(t => (
           <button
             key={t}
             onClick={() => setTab(t)}

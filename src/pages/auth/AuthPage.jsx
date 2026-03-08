@@ -61,14 +61,14 @@ export default function AuthPage() {
           const res = await fetch(`${API_BASE_URL}/users`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password }),
+            body: JSON.stringify({ name, email, password }),
           })
           if (!res.ok) {
             const data = await res.json().catch(() => ({}))
             throw new Error(data.message || 'Failed to create account')
           }
           const data = await res.json()
-          login('patient', { id: data.id, name: data.email?.split('@')[0] || 'Patient', email: data.email })
+          login('patient', { id: data.id, name: data.name, email: data.email })
         } else {
           const res = await fetch(`${API_BASE_URL}/users/login`, {
             method: 'POST',
@@ -80,7 +80,7 @@ export default function AuthPage() {
             throw new Error(data.message || 'Invalid email or password')
           }
           const data = await res.json()
-          login('patient', { id: data.id, name: data.email?.split('@')[0], email: data.email })
+          login('patient', { id: data.id, name: data.name, email: data.email })
         }
       }
     } catch (err) {
@@ -153,7 +153,7 @@ export default function AuthPage() {
           </h2>
           <p className="text-slate text-[15px] leading-relaxed mb-10">
             Voice-enabled appointment booking, AI-powered document review, and
-            unified medical records — all in one secure platform.
+            unified medical records all in one secure platform.
           </p>
           <ul className="flex flex-col gap-4">
             {features.map(f => (
@@ -241,7 +241,7 @@ export default function AuthPage() {
                         Select your specialization
                       </option>
                       {SPECIALIZATIONS.map(spec => (
-                        <option key={spec} value={spec}>
+                        <option key={spec} value={spec} className="bg-[#0D1B3E] text-cream">
                           {spec}
                         </option>
                       ))}

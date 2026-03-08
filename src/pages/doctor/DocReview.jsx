@@ -6,9 +6,9 @@ import Button from '../../components/ui/Button'
 import Icon from '../../components/ui/Icon'
 
 const DOCS = [
-  { name: 'Blood Panel — James Park',  date: 'Jan 15, 2026', patient: 'James Park',  type: 'Lab Results', status: 'pending'  },
-  { name: 'MRI Report — Maria Santos', date: 'Jan 10, 2026', patient: 'Maria Santos', type: 'Imaging',     status: 'pending'  },
-  { name: 'ECG — Robert Kim',          date: 'Feb 1, 2026',  patient: 'Robert Kim',   type: 'Cardiology',  status: 'reviewed' },
+  { name: 'Blood Panel James Park',  date: 'Jan 15, 2026', patient: 'James Park',  type: 'Lab Results', status: 'pending'  },
+  { name: 'MRI Report Maria Santos', date: 'Jan 10, 2026', patient: 'Maria Santos', type: 'Imaging',     status: 'pending'  },
+  { name: 'ECG Robert Kim',          date: 'Feb 1, 2026',  patient: 'Robert Kim',   type: 'Cardiology',  status: 'reviewed' },
 ]
 
 const FINDINGS = [

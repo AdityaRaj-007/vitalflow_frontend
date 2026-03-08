@@ -3,10 +3,14 @@ import Header from '../../components/layout/Header'
 import Card from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
 import Icon from '../../components/ui/Icon'
+import ReactMarkdown from 'react-markdown'
+import { useAuth } from '../../context/AuthContext'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
 export default function GoldenRecord() {
+  const { auth } = useAuth()
+  const [doctorId, setDoctorId] = useState(null)
   const [patients, setPatients] = useState([])
   const [selectedPatientId, setSelectedPatientId] = useState(null)
   const [record, setRecord] = useState({
@@ -20,16 +24,64 @@ export default function GoldenRecord() {
   })
 
   useEffect(() => {
+    if (auth?.role === 'doctor' && auth?.id && auth.id.length === 24) {
+      setDoctorId(auth.id)
+      return
+    }
+    let cancelled = false
+    const resolveDoctor = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/doctors`)
+        if (!res.ok) throw new Error('Failed to load doctors')
+        const data = await res.json()
+        if (cancelled) return
+        const name = auth?.name || 'Dr. Sarah Chen'
+        const doctor = (data || []).find(d => d.name && d.name.trim() === name.trim())
+        if (doctor) setDoctorId(doctor._id)
+        else if (data && data.length > 0) setDoctorId(data[0]._id)
+      } catch (e) {
+        if (!cancelled) console.error(e)
+      }
+    }
+    resolveDoctor()
+    return () => { cancelled = true }
+  }, [auth?.id, auth?.name, auth?.role])
+
+  useEffect(() => {
+    if (!doctorId) return
     let cancelled = false
     const loadPatients = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/users`)
-        if (!res.ok) throw new Error('Failed to load patients')
-        const data = await res.json()
+        const res = await fetch(`${API_BASE_URL}/doctors/${doctorId}/slots`)
+        if (!res.ok) throw new Error('Failed to load slots')
+        const slots = await res.json()
         if (cancelled) return
-        setPatients(data || [])
-        if (data?.length > 0 && !selectedPatientId) {
-          setSelectedPatientId(data[0].id)
+        
+        const patientMap = new Map()
+        if (Array.isArray(slots)) {
+          slots.forEach(slot => {
+            if (slot.patientId && slot.patientName) {
+              patientMap.set(slot.patientId, { id: slot.patientId, name: slot.patientName })
+            }
+          })
+        }
+        
+        const patientsList = Array.from(patientMap.values())
+        setPatients(patientsList)
+        
+        if (patientsList.length > 0) {
+          setSelectedPatientId(prev => prev || patientsList[0].id)
+        } else {
+          setSelectedPatientId(null)
+          setRecord({
+            patientName: 'No Patients',
+            summary: 'You have no scheduled appointments.',
+            riskFlags: [],
+            medications: [],
+            recentEvents: [],
+            allergies: [],
+            documentTypes: [],
+          })
         }
       } catch (e) {
         if (!cancelled) console.error(e)
@@ -37,7 +89,7 @@ export default function GoldenRecord() {
     }
     loadPatients()
     return () => { cancelled = true }
-  }, [])
+  }, [doctorId])
 
   useEffect(() => {
     if (!selectedPatientId) return
@@ -88,9 +140,9 @@ export default function GoldenRecord() {
                 : 'bg-cream/[0.04] border-cream/[0.1] text-slate hover:text-cream'}`}
           >
             <div className="w-6 h-6 rounded-full bg-gradient-to-br from-teal/60 to-amber/40 flex items-center justify-center text-[10px] font-semibold text-cream shrink-0">
-              {(p.email || 'P').split('@')[0].slice(0, 2).toUpperCase()}
+              {(p.name || 'P').split('@')[0].slice(0, 2).toUpperCase()}
             </div>
-            {p.email}
+            {p.name}
           </button>
         ))}
       </div>
@@ -106,9 +158,9 @@ export default function GoldenRecord() {
               className={`nav-link w-full mb-0.5 ${selectedPatientId === p.id ? 'active' : ''}`}
             >
               <div className="w-7 h-7 rounded-full bg-gradient-to-br from-teal/60 to-amber/40 flex items-center justify-center text-[11px] font-semibold text-cream shrink-0">
-                {(p.email || 'P').split('@')[0].slice(0, 2).toUpperCase()}
+                {(p.name || 'P').split('@')[0].slice(0, 2).toUpperCase()}
               </div>
-              {p.email}
+              {p.name}
             </button>
           ))}
         </Card>
@@ -131,7 +183,9 @@ export default function GoldenRecord() {
                 <Icon name="star" size={12} className="text-teal-light" />
                 <span className="text-[11px] text-teal-light uppercase tracking-wide">AI Summary</span>
               </div>
-              <p className="text-sm text-cream-dk leading-relaxed whitespace-pre-line">{record.summary}</p>
+              <div className="text-sm text-cream-dk leading-relaxed prose prose-invert prose-teal max-w-none">
+                <ReactMarkdown>{record.summary}</ReactMarkdown>
+              </div>
             </div>
           </Card>
 

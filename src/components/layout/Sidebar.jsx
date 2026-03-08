@@ -1,6 +1,7 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import Icon from '../ui/Icon'
+import Badge from '../ui/Badge'
 
 const PATIENT_LINKS = [
   { path: '/',           icon: 'home',    label: 'Dashboard' },
@@ -43,7 +44,7 @@ export default function Sidebar({ onClose }) {
               Vital<span className="text-teal-light">Flow</span>
             </p>
             <p className="text-[10px] text-slate uppercase tracking-widest mt-0.5 capitalize">
-              {auth?.role}
+              {auth?.role === "patient" ? "USER" : auth?.role}
             </p>
           </div>
         </div>
@@ -71,7 +72,7 @@ export default function Sidebar({ onClose }) {
                 size={16}
                 className={active ? 'text-teal-light' : 'text-slate'}
               />
-              {link.label}
+              {link.label}{(link.label === 'Doc Review' || link.label === 'Prior Auth') && <Badge variant={'teal'} className='text-xs'>Beta</Badge>}
             </button>
           )
         })}
@@ -85,7 +86,7 @@ export default function Sidebar({ onClose }) {
           </div>
           <div className="min-w-0">
             <p className="text-sm text-cream font-medium truncate">{auth?.name}</p>
-            <p className="text-[11px] text-slate truncate">{auth?.id}</p>
+            {auth?.role === "patient" && <p className="text-[11px] text-slate truncate">P-{auth?.id < 10 ? `00${auth?.id}` : auth?.id < 100 ? `0${auth?.id}` : auth?.id}</p>}
           </div>
         </div>
         <button
