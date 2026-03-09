@@ -42,13 +42,24 @@ export default function DoctorSchedule() {
   }, [slots, filterMode, customDate])
 
   const pendingSlots = useMemo(
-    () => filteredSlots.filter(s => s.status === 'PENDING_APPROVAL'),
+    () =>
+      filteredSlots
+        .filter(s => s.status === 'PENDING_APPROVAL')
+        .slice()
+        .sort((a, b) => {
+          const da = a.startTime ? new Date(a.startTime).getTime() : Number.POSITIVE_INFINITY
+          const db = b.startTime ? new Date(b.startTime).getTime() : Number.POSITIVE_INFINITY
+          return da - db
+        }),
     [filteredSlots],
   )
 
   const appointmentsForGrid = useMemo(() => {
     return filteredSlots.map((s, idx) => {
       const d = s.startTime ? new Date(s.startTime) : null
+      const uniqueRelatedDocs = Array.isArray(s.related_documents)
+        ? Array.from(new Set(s.related_documents))
+        : []
       return {
         id: s._id || idx,
         name: s.patientName || '—',
@@ -59,6 +70,7 @@ export default function DoctorSchedule() {
         status: s.status === 'BOOKED' ? 'confirmed' : s.status === 'PENDING_APPROVAL' ? 'pending' : 'available',
         color: s.status === 'BOOKED' ? '#0B6E6E' : s.status === 'PENDING_APPROVAL' ? '#d97706' : '#6b7280',
         callSummary: s.ai_summary,
+        relatedDocuments: uniqueRelatedDocs,
         rawDate: s.startTime,
         hourIndex: d ? HOURS.findIndex(h => Number(h.split(':')[0]) === d.getHours()) : -1,
         slotId: s._id,
@@ -304,6 +316,27 @@ console.log(formattedDate);
                       {appt.ai_summary}
                     </p>
                   )}
+                  {Array.isArray(appt.related_documents) && appt.related_documents.length > 0 && (() => {
+                    const uniqueUrls = Array.from(new Set(appt.related_documents))
+                    return (
+                      <div className="mt-2 space-y-1">
+                        <p className="text-[11px] text-slate uppercase tracking-wide">Relevant documents</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {uniqueUrls.map((url, idx2) => (
+                            <a
+                              key={idx2}
+                              href={url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-[11px] px-2 py-1 rounded-full bg-cream/[0.06] text-teal-light border border-teal/40 hover:bg-teal/10 transition-colors break-all"
+                            >
+                              {`Report ${idx2 + 1}`}
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )
+                  })()}
                 </div>
               ))}
               {pendingSlots.length === 0 && (
